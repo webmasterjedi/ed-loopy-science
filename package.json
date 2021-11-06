@@ -1,0 +1,16 @@
+{
+  "name": "ed_loopy_science",
+  "productName": "ed_loopy_science",
+  "description": "Loopy Science Tools for Elite Dangerous",
+  "keywords": [],
+  "main": "./main.js",
+  "version": "1.0.0",
+  "author": "webmasterjedi",
+  "scripts": {
+    "start": "electron ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "13.1.7"
+  }
+}
