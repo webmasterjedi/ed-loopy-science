@@ -1,19 +1,18 @@
 // All of the Node.js APIs are available in the preload process.
 // It has the same sandbox as a Chrome extension.
-require('popper.js');
-require('bootstrap');
 
-const { contextBridge, ipcRenderer } = require("electron");
-const {$} = require('jquery');
+const { contextBridge, ipcRenderer } = require('electron')
 
-contextBridge.exposeInMainWorld("ipcRenderer", {ipcRenderer});
+contextBridge.exposeInMainWorld('ipcRenderer', { ipcRenderer })
 
-function chooseDirectory() {
-  ipcRenderer.send('openDirectory', {});
-  console.log("wtf?");
+function chooseDirectory () {
+  return  ipcRenderer.sendSync('openDirectory', {})
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  
-  let button = $('#ChooseDirectory').on('click',chooseDirectory)
+  window.$ = window.jQuery = require('jquery')
+  let button = $('#ChooseDirectoryButton').on('click', () => {
+    let journal_path = chooseDirectory()
+    console.log(journal_path)
+  })
 })

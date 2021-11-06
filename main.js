@@ -5,8 +5,8 @@ const path = require('path')
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 720,
     webPreferences: {
       enableRemoteModule: true,
       preload: path.join(__dirname, 'preload.js')
@@ -17,17 +17,15 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 }
-ipcMain.on('openDirectory', function () {
+
+ipcMain.on('openDirectory', function (event, ...args) {
   console.log('click')
   //show open dialog
-  dialog.showOpenDialog({
-    defaultPath: '~/',
+  event.returnValue = dialog.showOpenDialogSync({
+    defaultPath: '%HOMEPATH%/Saved Games',
     properties: ["openDirectory"]
-  }, function() {
-    console.log("wtf?");
-    
   });
 });
 // This method will be called when Electron has finished
@@ -35,7 +33,7 @@ ipcMain.on('openDirectory', function () {
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   createWindow()
-  
+
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.

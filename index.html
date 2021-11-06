@@ -1,17 +1,29 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8">
-    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <title>Crowleys ED Journal Scanner</title>
-    <link rel="stylesheet" href="./contents/bootstrap/4.1.3/css/bootstrap.min.css" />
-  </head>
-  <body>
-    <h1>Start</h1>
-    <button id="ChooseDirectory">Choose Directory</button>
-    <!-- You can also require other files to run in this process -->
-    <script src="./renderer.js"></script>
-  </body>
+    <title>Loopy Science ED Tools</title>
+    <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"/>
+    <script defer src="./node_modules/@fortawesome/fontawesome-pro/js/all.min.js"></script>
+</head>
+<body>
+<main class="container-fluid">
+    <header class="pt-3">
+        <h1 class="text-center"><i class="fad fa-solar-system"></i> Loopy Science ED Tools <i class="fad fa-planet-ringed"></i></h1>
+    </header>
+<section id="ChooseDirectoryState" class="row" data-step="1">
+    <hr>
+    <aside class="col">
+        <h3>Step 1:</h3>
+        <small>Choose directory that your Elite Dangerous Journal files are in</small>
+    </aside>
+    <aside class="col">
+        <button id="ChooseDirectoryButton" class="btn btn-primary">Choose Directory</button>
+        <span id="DirectoryPathPreview"></span>
+    </aside>
+</section>
+</main>
+<!-- You can also require other files to run in this process -->
+<script src="./renderer.js"></script>
+</body>
 </html>
