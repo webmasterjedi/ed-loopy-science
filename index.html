@@ -1,27 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
     <title>Loopy Science ED Tools</title>
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"/>
     <script defer src="./node_modules/@fortawesome/fontawesome-pro/js/all.min.js"></script>
 </head>
-<body>
-<main class="container-fluid">
-    <header class="pt-3">
-        <h1 class="text-center"><i class="fad fa-solar-system"></i> Loopy Science ED Tools <i class="fad fa-planet-ringed"></i></h1>
+<body class="h-100">
+<main class="container-fluid h-100">
+    <header class="pt-3 fixed-top">
+        <h1 class="text-center"><i class="fad fa-solar-system"></i> Loopy Science ED Tools <i
+                class="fad fa-planet-ringed"></i></h1>
     </header>
-<section id="ChooseDirectoryState" class="row" data-step="1">
-    <hr>
-    <aside class="col">
-        <h3>Step 1:</h3>
-        <small>Choose directory that your Elite Dangerous Journal files are in</small>
-    </aside>
-    <aside class="col">
-        <button id="ChooseDirectoryButton" class="btn btn-primary">Choose Directory</button>
-        <span id="DirectoryPathPreview"></span>
-    </aside>
-</section>
+    <section id="ChooseDirectoryState" class="d-flex align-items-center h-100" data-step="1">
+        <div class="card shadow w-75 m-auto">
+            <h5 class="card-header">Step 1</h5>
+            <div class="card-body">
+                <h5 class="card-title">ED Journal Directory</h5>
+                <h6 class="card-subtitle mb-2">Choose the directory that your Elite Dangerous Journal files are in.</h6>
+            </div>
+            <div class="card-body">
+                <button id="ChooseDirectoryButton" class="btn btn-primary">
+                    <i class="fad fa-folder-open"></i> Choose Directory
+                </button>
+                <input type="text" id="DirectoryPathPreview" class="form-control form-control-sm" disabled
+                       value="No journals loaded.">
+            </div>
+
+                <ul id="JournalList" class="card-body list-group list-group-flush" style="max-height: 200px; overflow-y: auto">
+
+                </ul>
+
+        </div>
+    </section>
+    <section id="ResultsState" class="d-flex align-items-center h-100" data-step="21">
+        <div class="card shadow w-100 m-auto">
+            <h5 class="card-header">Step 2</h5>
+            <div class="card-body">
+                <h5 class="card-title">Results</h5>
+                <h6 class="card-subtitle mb-2">Here are your Loopy Science results!</h6>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">Star Type</th>
+                        <th scope="col">Earthlike World</th>
+                        <th scope="col">Ammonia World</th>
+                        <th scope="col">Water World</th>
+                    </tr>
+                    </thead>
+                    <tbody id="ResultsContainer">
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
 </main>
 <!-- You can also require other files to run in this process -->
 <script src="./renderer.js"></script>

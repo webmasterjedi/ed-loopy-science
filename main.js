@@ -5,8 +5,8 @@ const path = require('path')
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 720,
+    width: 1666,
+    height: 666,
     webPreferences: {
       enableRemoteModule: true,
       preload: path.join(__dirname, 'preload.js')
@@ -17,14 +17,13 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 }
 
 ipcMain.on('openDirectory', function (event, ...args) {
   console.log('click')
   //show open dialog
   event.returnValue = dialog.showOpenDialogSync({
-    defaultPath: '%HOMEPATH%/Saved Games',
     properties: ["openDirectory"]
   });
 });
