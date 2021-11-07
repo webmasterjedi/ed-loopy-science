@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const LineByLineReader = require('line-by-line')
+const Console = require('console')
 
 let star_types = []
 let star_type = ''
@@ -33,7 +34,7 @@ function getStarIdFromPlanetsParents (parents) {
   let parent_id = null
   parents.every(parent => {
     if (parent.hasOwnProperty('Star')) {
-      parent_id = parent['Star']
+      parent_id = Number(parent['Star'])
       return false
     }
     return true
@@ -50,30 +51,34 @@ function readJournalLineByLine (file) {
     console.log(err)
   })
   lr.on('line', function (line) {
-    // 'line' contains the current line without the trailing newline character.
+
+    //Parse JSON from Journal file
     let entry_decoded
     if (!entry_decoded) {
       try {
         entry_decoded = JSON.parse(line)
       } catch (e) {
         entry_decoded = null
+        return false
       }
     }
-
+    //check for the type of scan we need
     if (entry_decoded && ((entry_decoded['event'] !== 'Scan') ||
       (typeof entry_decoded['ScanType'] !== 'undefined' &&
         entry_decoded['ScanType'] === 'NavBeaconDetail'))) {
-      entry_decoded = null
+      return false
     }
+
     if (entry_decoded && entry_decoded.hasOwnProperty('BodyName') &&
       body_count.hasOwnProperty(entry_decoded['BodyName'])) {
       entry_decoded = null
+      return false
     }
 
     if (entry_decoded) {
       let star_system = entry_decoded['StarSystem']
       body_count[entry_decoded['BodyName']] = entry_decoded['BodyName']
-
+      //checks to make sure scan is a star
       if (entry_decoded.hasOwnProperty('ScanType') &&
         entry_decoded.hasOwnProperty('Luminosity') &&
         entry_decoded.hasOwnProperty('Subclass')) {
@@ -82,8 +87,9 @@ function readJournalLineByLine (file) {
         if (!stars_by_systems.hasOwnProperty(star_system)) {
           stars_by_systems[star_system] = {}
         }
-        stars_by_systems[star_system][entry_decoded['BodyID']] = star_type
-
+        let body_id = Number(entry_decoded['BodyID'])
+        //console.log(body_id)
+        stars_by_systems[star_system][body_id] = star_type
         if (!star_types.hasOwnProperty(star_type)) {
           star_types[star_type] = {
             'Earthlike body':
@@ -110,16 +116,23 @@ function readJournalLineByLine (file) {
         let planets_star_id
 
         planets_star_id = getStarIdFromPlanetsParents(entry_decoded['Parents'])
-        //console.log(planets_star_id)
-        if (planets_star_id) {
-          if (typeof stars_by_systems[star_system][planets_star_id] !==
+        if (planets_star_id !== null) {
+
+          if (stars_by_systems.hasOwnProperty(star_system) &&
+            typeof stars_by_systems[star_system][planets_star_id] !==
             'undefined') {
+            //console.log('Sys:', stars_by_systems[star_system])
             star_type = stars_by_systems[star_system][planets_star_id]
 
-          } else {
+          } else if (stars_by_systems.hasOwnProperty(star_system)) {
+            console.log('Parent Body:', stars_by_systems[star_system])
+            //console.log(stars_by_systems[star_system])
             star_type = stars_by_systems[star_system][1]
           }
-          star_types[star_type][planet_type]++
+          if (star_types.hasOwnProperty(star_type)) {
+            star_types[star_type][planet_type]++
+          }
+
         }
 
       }
@@ -134,8 +147,10 @@ function readJournalLineByLine (file) {
       '</li>')
     journal_item.find('span.file-name').text(file)
     $('#JournalList').append(journal_item)
+    //console.log (file_count , files_total)
     if (file_count >= files_total) {
-      outputResults()
+      setTimeout(outputResults, 1000)
+
     }
     // All lines are read, file is closed now.
   })
@@ -152,7 +167,6 @@ function outputResults () {
 
     Object.entries(planets).forEach(planet => {
       let [planet_type, count] = planet
-      count = count ?? 0
       new_row.append(`<td data-count="${count}">${count}</td>`)
     })
     $('#ResultsContainer').append(new_row)
