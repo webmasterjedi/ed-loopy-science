@@ -5,8 +5,8 @@ const path = require('path')
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1666,
-    height: 666,
+    width: 1280,
+    height: 720,
     webPreferences: {
       enableRemoteModule: true,
       preload: path.join(__dirname, 'preload.js')
@@ -17,7 +17,7 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools()
+  //mainWindow.webContents.openDevTools()
 }
 
 ipcMain.on('openDirectory', function (event, ...args) {

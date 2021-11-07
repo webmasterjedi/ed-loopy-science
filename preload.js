@@ -10,9 +10,17 @@ let star_types = []
 let star_type = ''
 let stars_by_systems = []
 let body_count = []
+let journal_path = ''
 let file_count = 2
 let files_total = 0
 contextBridge.exposeInMainWorld('ipcRenderer', { ipcRenderer })
+
+function sortObjectByKeys (obj) {
+  return Object.keys(obj).sort().reduce(function (result, key) {
+    result[key] = obj[key]
+    return result
+  }, {})
+}
 
 function chooseDirectory () {
   return ipcRenderer.sendSync('openDirectory', {})
@@ -25,17 +33,17 @@ function getStarIdFromPlanetsParents (parents) {
   let parent_id = null
   parents.every(parent => {
     if (parent.hasOwnProperty('Star')) {
-      parent_id = parent['Star'];
-      return false;
+      parent_id = parent['Star']
+      return false
     }
-    return true;
+    return true
   })
   return parent_id
 }
 
 function readJournalLineByLine (file) {
 
-  let lr = new LineByLineReader(file)
+  let lr = new LineByLineReader(journal_path + '\\' + file)
 
   lr.on('error', function (err) {
     // 'err' contains error object
@@ -118,9 +126,15 @@ function readJournalLineByLine (file) {
     }
   })
   lr.on('end', function () {
-    file_count++;
-    console.log(file_count,files_total)
-    if(file_count >= files_total){
+    file_count++
+
+    let journal_item = $('' +
+      '<li class="list-group-item">' +
+      '<i class="fad fa-atlas"></i><span class="file-name ms-3"></span><span class="ms-4 text-success"><i class="fas fa-check"></i></span>' +
+      '</li>')
+    journal_item.find('span.file-name').text(file)
+    $('#JournalList').append(journal_item)
+    if (file_count >= files_total) {
       outputResults()
     }
     // All lines are read, file is closed now.
@@ -129,7 +143,8 @@ function readJournalLineByLine (file) {
 }
 
 function outputResults () {
-  console.log('foo')
+
+  star_types = sortObjectByKeys(star_types)
   Object.entries(star_types).forEach(entry => {
     const [star_type, planets] = entry
     let new_row = $('<tr data-star-type="${star_type}">')
@@ -142,28 +157,19 @@ function outputResults () {
     })
     $('#ResultsContainer').append(new_row)
   })
+  $('[data-step="1"]').removeClass('d-flex').slideUp()
+  $('[data-step="2"]').slideUp().slideDown()
 }
 
-function getJournalFiles (journal_path) {
+function getJournalFiles () {
   fs.readdir(journal_path, (err, files) => {
     if (err)
       console.log(err)
     else {
-      files_total = files.length;
+      files_total = files.length
       files.forEach(file => {
         if (path.extname(file) === '.log') {
-
-          //Todo: Process file line by line
-          //console.log(file)
-          let journal_item = $('' +
-            '<li class="list-group-item">' +
-            '<i class="fad fa-atlas"></i><span class="file-name ms-3"></span>' +
-            '</li>')
-          journal_item.find('span.file-name').text(file)
-          //$('#JournalList').append(journal_item)
-
-          readJournalLineByLine(journal_path + '\\' + file)
-
+          readJournalLineByLine(file)
         } else {
           files_total--
         }
@@ -177,10 +183,10 @@ function getJournalFiles (journal_path) {
 window.addEventListener('DOMContentLoaded', () => {
   window.$ = window.jQuery = require('jquery')
   let button = $('#ChooseDirectoryButton').on('click', () => {
-    let journal_path = chooseDirectory()
+    journal_path = chooseDirectory()[0]
     if (journal_path) {
-      $('#DirectoryPathPreview').val(journal_path[0])
-      getJournalFiles(journal_path[0])
+      $('#DirectoryPathPreview').val(journal_path)
+      getJournalFiles()
     }
   })
 })
