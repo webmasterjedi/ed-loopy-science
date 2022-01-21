@@ -3,3 +3,34 @@ body {
   height: 100%;
 }
 
+.planet-total {
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  color: white;
+  text-shadow: 2px 2px 2px black;
+
+  &.earth {
+    background-image: url("../assets/earth.png");
+
+    h3 {
+      color: green
+    }
+  }
+
+  &.ammonia {
+    background-image: url("../assets/ammonia.png");
+
+    h3 {
+      color: saddlebrown
+    }
+  }
+
+  &.water {
+    background-image: url("../assets/water.png");
+
+    h3 {
+      color: deepskyblue
+    }
+  }
+}
