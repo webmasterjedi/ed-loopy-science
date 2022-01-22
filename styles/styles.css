@@ -1,0 +1,34 @@
+html,
+body {
+  height: 100%;
+  background-color: black;
+  color: white;
+}
+
+.planet-total {
+  background-position: center;
+  background-size: contain;
+  background-repeat: no-repeat;
+  color: white;
+  text-shadow: 2px 2px 2px black;
+}
+.planet-total.earth {
+  background-image: url("../assets/earth.png");
+}
+.planet-total.earth h3 {
+  color: green;
+}
+.planet-total.ammonia {
+  background-image: url("../assets/ammonia.png");
+}
+.planet-total.ammonia h3 {
+  color: saddlebrown;
+}
+.planet-total.water {
+  background-image: url("../assets/water.png");
+}
+.planet-total.water h3 {
+  color: deepskyblue;
+}
+
+/*# sourceMappingURL=styles.css.map */
