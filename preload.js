@@ -150,16 +150,16 @@ function readJournalLineByLine (file) {
   })
   lr.on('end', function () {
     file_count++
-    console.log('hello')
 // All lines are read, file is closed now.
     let journal_item = $('' +
-      '<li class="list-group-item">' +
+      '<li class="list-group-item bg-dark text-light">' +
       '<i class="fad fa-atlas"></i><span class="file-name ms-3"></span><span class="ms-4 text-success"><i class="fas fa-check"></i></span>' +
       '</li>')
     journal_item.find('span.file-name').text(file)
     $('#JournalList').append(journal_item)
+    var listHistory = document.getElementById("JournalList");
+    listHistory.scrollTop = listHistory.scrollHeight;
 
-    console.log(file_count, files_total)
     if (file_count >= files_total) {
 
       setTimeout(outputResults, 1000)
@@ -169,11 +169,37 @@ function readJournalLineByLine (file) {
 
 }
 
+function compare (idx) {
+  return function (a, b) {
+    let A = tableCell(a, idx), B = tableCell(b, idx)
+    return $.isNumeric(A) && $.isNumeric(B) ?
+      A - B : A.toString().localeCompare(B)
+  }
+}
+
+function tableCell (tr, index) {
+  return $(tr).children('td').eq(index).text()
+}
+
+function setIcon (element, inverse) {
+
+  var iconSpan = $(element).find('[data-fa-i2svg]')
+  console.log(element)
+  if (inverse == false) {
+    $(iconSpan).removeClass('fa-sort fa-sort-down')
+    $(iconSpan).addClass('fa-sort-up')
+
+  } else {
+    $(iconSpan).removeClass('fa-sort fa-sort-up')
+    $(iconSpan).addClass('fa-sort-down')
+  }
+  $(element).siblings().find('[data-fa-i2svg]').removeClass('fa-sort-down fa-sort-up').addClass('fa-sort')
+}
+
 function outputResults () {
-  console.log('outputting results')
+
   star_types = sortObjectByKeys(star_types)
-  console.log(star_types)
-  console.log(planet_totals)
+
   let current_count = {
     'Earthlike body':
       0,
@@ -184,7 +210,7 @@ function outputResults () {
   }
   Object.entries(star_types).forEach(entry => {
     const [star_type, planets] = entry
-    let new_row = $('<tr data-star-type="${star_type}">')
+    let new_row = $(`<tr data-star-type="${star_type}">`)
     new_row.append(`<td>${star_type}</td>`)
 
     Object.entries(planets).forEach(planet => {
@@ -193,22 +219,35 @@ function outputResults () {
         current_count[planet_type] = count
         top_star_types[planet_type] = star_type
       }
-      new_row.append(`<td data-planet-type="${planet_type}" data-count="${count}">${count}</td>`)
+      new_row.append(
+        `<td data-planet-type="${planet_type}" data-count="${count}">${count}</td>`)
     })
     $('#ResultsContainer').append(new_row)
   })
   Object.entries(planet_totals).forEach(planet => {
     let [planet_type, count] = planet
-    console.log(planet_type, count)
     $('.planet-total[data-type="' + planet_type + '"]').
       find('span.total').
       text(count).parent().find('h4').text(top_star_types[planet_type])
 
   })
+  var table = $('table')
+
+  $('th.sortable').click(function (e) {
+    var table = $(this).parents('table').eq(0)
+    var ths = table.find('tr:gt(0)').toArray().sort(compare($(this).index()))
+    this.asc = !this.asc
+    if (!this.asc)
+      ths = ths.reverse()
+    for (var i = 0; i < ths.length; i++)
+      table.append(ths[i])
+
+    setIcon(e.target, this.asc)
+  })
 
   $('[data-step="1"]').removeClass('d-flex').slideUp()
   $('[data-step="2"]').slideUp().slideDown()
-  console.log(top_star_types)
+
 }
 
 function getTotalLogsCount (files) {

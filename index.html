@@ -14,7 +14,7 @@
                 class="fad fa-planet-ringed"></i></h1>
     </header>
     <section id="ChooseDirectoryState" class="d-flex align-items-center h-100" data-step="1">
-        <div class="card shadow w-75 m-auto">
+        <div class="card shadow w-75 m-auto bg-dark text-light">
             <h5 class="card-header">Step 1</h5>
             <div class="card-body">
                 <h5 class="card-title">ED Journal Directory</h5>
@@ -28,14 +28,14 @@
                        value="No journals loaded.">
             </div>
 
-                <ul id="JournalList" class="card-body list-group list-group-flush" style="max-height: 200px; overflow-y: auto">
+                <ul id="JournalList" class="card-body list-group list-group-flush bg-dark text-light" style="max-height: 200px; overflow-y: auto">
 
                 </ul>
 
         </div>
     </section>
-    <section id="ResultsState" class="mt-5" data-step="2" style="">
-        <div class="card shadow w-100 mx-auto mt-5">
+    <section id="ResultsState" class="mt-5" data-step="2" style="display: none">
+        <div class="card shadow w-100 mx-auto mt-5 bg-dark text-light">
             <h5 class="card-header">Step 2</h5>
             <div class="card-body">
                 <h5 class="card-title">Results</h5>
@@ -62,13 +62,13 @@
                         <h4></h4>
                     </div>
                 </div>
-                <table class="table">
+                <table class="table bg-dark text-light">
                     <thead>
                     <tr>
-                        <th scope="col">Star Type</th>
-                        <th scope="col">Earthlike World</th>
-                        <th scope="col">Ammonia World</th>
-                        <th scope="col">Water World</th>
+                        <th class="sortable" scope="col">Star Type <i class="fad fa-sort"></i></th>
+                        <th class="sortable" scope="col">Earthlike World <i class="fad fa-sort"></i></th>
+                        <th class="sortable" scope="col">Ammonia World <i class="fad fa-sort"></i></th>
+                        <th class="sortable" scope="col">Water World <i class="fad fa-sort"></i></th>
                     </tr>
                     </thead>
                     <tbody id="ResultsContainer">
