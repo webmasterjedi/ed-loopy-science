@@ -2,7 +2,7 @@
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 const path = require('path')
 
-
+if (require('electron-squirrel-startup')) return app.quit();
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
