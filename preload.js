@@ -345,7 +345,7 @@ function readJournalLineByLine (file) {
 
 // All lines are read, file is closed now.
     let journal_item = $('' +
-      '<li class="list-group-item bg-dark text-light">' +
+      '<li class="list-group-item bg-transparent text-light">' +
       '<i class="fad fa-atlas"></i><span class="file-name ms-3"></span><span class="ms-4 text-success"><i class="fas fa-check"></i></span>' +
       '</li>')
     journal_item.find('span.file-name').text(file)
