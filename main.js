@@ -2,6 +2,7 @@
 const {app, BrowserWindow, ipcMain, dialog} = require('electron')
 const path = require('path')
 
+
 function createWindow () {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -17,7 +18,7 @@ function createWindow () {
   mainWindow.loadFile('index.html')
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools()
+  mainWindow.webContents.openDevTools()
 }
 
 ipcMain.on('openDirectory', function (event, ...args) {

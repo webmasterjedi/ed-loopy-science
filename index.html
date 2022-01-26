@@ -8,22 +8,24 @@
     <script defer src="./node_modules/@fortawesome/fontawesome-pro/js/all.min.js"></script>
 </head>
 <body class="h-100">
+<header class="pt-3 text-center">
+    <img style="max-width: 125px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
+</header>
 <main class="container-fluid h-100">
-    <header class="pt-3">
-        <h1 class="text-center"><i class="fad fa-solar-system"></i> Loopy Science ED Tools <i
-                class="fad fa-planet-ringed"></i></h1>
-    </header>
-    <section id="ChooseDirectoryState" class="d-flex align-items-center h-100" data-step="1">
+
+    <section id="ChooseDirectoryState" class="mt-3 d-flex align-items-center" data-step="1">
         <div class="card shadow w-75 m-auto bg-dark text-light">
-            <h5 class="card-header">Step 1</h5>
+            <h5 class="card-header">Scan Journal Logs</h5>
             <div class="card-body">
-                <h5 class="card-title">ED Journal Directory</h5>
-                <h6 class="card-subtitle mb-2">Choose the directory that your Elite Dangerous Journal files are in.</h6>
+                <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files SHOULD be in.</h6>
             </div>
             <div class="card-body">
-                <button id="ChooseDirectoryButton" class="btn btn-primary">
+                <!--<button id="ChooseDirectoryButton" class="btn btn-primary">
                     <i class="fad fa-folder-open"></i> Choose Directory
                 </button>
+                <button id="RunButton" class="btn btn-sucess">
+                    <i class="fad fa-folder-open"></i> Start Processing
+                </button>-->
                 <input type="text" id="DirectoryPathPreview" class="form-control form-control-sm" disabled
                        value="No journals loaded.">
             </div>
@@ -34,13 +36,9 @@
 
         </div>
     </section>
-    <section id="ResultsState" class="mt-5" data-step="2" style="display: none">
+    <section id="ResultsState" class="mt-3" data-step="2" style="display: none">
         <div class="card shadow w-100 mx-auto mt-5 bg-dark text-light">
-            <h5 class="card-header">Step 2</h5>
-            <div class="card-body">
-                <h5 class="card-title">Results</h5>
-                <h6 class="card-subtitle mb-2">Here are your Loopy Science results!</h6>
-            </div>
+            <h5 class="card-header">Here are your Loopy Science results!</h5>
             <div class="card-body">
                 <div class="row">
                     <div class="col planet-total earth text-center" data-type="Earthlike body">
