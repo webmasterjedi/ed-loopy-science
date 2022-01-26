@@ -1,38 +1,49 @@
+.bg-dark {
+  --bs-bg-opacity: 0.8;
+  background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
+}
+
+.bg-transparent {
+  --bs-bg-opacity: 0;
+  background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
+}
+
 html,
 body {
   height: 100%;
-  background-color: black;
+  background-color: #1f2025;
   background-image: url("../assets/bg.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  color: white;
+  color: #e6ecef;
 }
 
 .planet-total {
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
-  color: white;
+  color: #e6ecef;
+  font-weight: 900;
   text-shadow: 2px 2px 2px black;
 }
 .planet-total.earth {
   background-image: url("../assets/earth.png");
 }
 .planet-total.earth h3 {
-  color: green;
+  color: #77bf72;
 }
 .planet-total.ammonia {
   background-image: url("../assets/ammonia.png");
 }
 .planet-total.ammonia h3 {
-  color: saddlebrown;
+  color: #d9cda6;
 }
 .planet-total.water {
   background-image: url("../assets/water.png");
 }
 .planet-total.water h3 {
-  color: deepskyblue;
+  color: #4a7b8c;
 }
 
 /*# sourceMappingURL=styles.css.map */
