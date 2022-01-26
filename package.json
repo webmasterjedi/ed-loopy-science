@@ -4,7 +4,7 @@
   "description": "Loopy Science Tools for Elite Dangerous",
   "keywords": [],
   "main": "./main.js",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "author": "webmasterjedi",
   "scripts": {
     "start": "electron-forge start",
