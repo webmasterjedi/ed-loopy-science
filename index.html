@@ -2,42 +2,36 @@
 <html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
-    <title>Loopy Science ED Tools</title>
+    <title>Loopy Science v1.1.0</title>
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="./styles/styles.css"/>
-    <script defer src="./node_modules/@fortawesome/fontawesome-pro/js/all.min.js"></script>
+    <script defer src="./node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
 </head>
 <body class="h-100">
 <header class="pt-3 text-center">
-    <img style="max-width: 125px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
+    <img style="max-width: 66.6px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
 </header>
 <main class="container-fluid h-100">
 
     <section id="ChooseDirectoryState" class="mt-3 d-flex align-items-center" data-step="1">
-        <div class="card shadow w-75 m-auto bg-dark text-light">
+        <div class="card w-75 m-auto bg-dark text-light">
             <h5 class="card-header">Scan Journal Logs</h5>
             <div class="card-body">
-                <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files SHOULD be in.</h6>
+                <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files
+                    SHOULD be in.</h6>
             </div>
             <div class="card-body">
-                <!--<button id="ChooseDirectoryButton" class="btn btn-primary">
-                    <i class="fad fa-folder-open"></i> Choose Directory
-                </button>
-                <button id="RunButton" class="btn btn-sucess">
-                    <i class="fad fa-folder-open"></i> Start Processing
-                </button>-->
                 <input type="text" id="DirectoryPathPreview" class="form-control form-control-sm" disabled
                        value="No journals loaded.">
             </div>
 
-                <ul id="JournalList" class="card-body list-group list-group-flush bg-transparent text-light" style="max-height: 200px; overflow-y: auto">
-
-                </ul>
-
+            <ul id="JournalList" class="card-body list-group list-group-flush bg-transparent text-light"
+                style="max-height: 200px; overflow-y: auto">
+            </ul>
         </div>
     </section>
     <section id="ResultsState" class="mt-3" data-step="2" style="display: none">
-        <div class="card shadow w-100 mx-auto mt-5 bg-dark text-light">
+        <div class="card w-100 mx-auto mt-5 bg-dark text-light">
             <h5 class="card-header">Here are your Loopy Science results!</h5>
             <div class="card-body">
                 <div class="row">
@@ -60,13 +54,15 @@
                         <h4></h4>
                     </div>
                 </div>
+            </div>
+            <div class="card-body">
                 <table class="table bg-dark text-light">
                     <thead>
                     <tr>
-                        <th class="sortable" scope="col">Star Type <i class="fad fa-sort"></i></th>
-                        <th class="sortable" scope="col">Earthlike World <i class="fad fa-sort"></i></th>
-                        <th class="sortable" scope="col">Ammonia World <i class="fad fa-sort"></i></th>
-                        <th class="sortable" scope="col">Water World <i class="fad fa-sort"></i></th>
+                        <th class="sortable" scope="col">Star Type <i class="fas fa-sort"></i></th>
+                        <th class="sortable" scope="col">Earthlike World <i class="fas fa-sort"></i></th>
+                        <th class="sortable" scope="col">Ammonia World <i class="fas fa-sort"></i></th>
+                        <th class="sortable" scope="col">Water World <i class="fas fa-sort"></i></th>
                     </tr>
                     </thead>
                     <tbody id="ResultsContainer">
