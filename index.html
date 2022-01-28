@@ -9,13 +9,13 @@
 </head>
 <body class="h-100">
 <header class="pt-3 text-center">
-    <img style="max-width: 66.6px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
+    <img style="max-width: 150px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
 </header>
 <main class="container-fluid h-100">
 
     <section id="ChooseDirectoryState" class="mt-3 d-flex align-items-center" data-step="1">
         <div class="card w-75 m-auto bg-dark text-light">
-            <h5 class="card-header">Scan Journal Logs</h5>
+            <h5 class="card-header">Processing Journals...</h5>
             <div class="card-body">
                 <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files
                     SHOULD be in.</h6>
@@ -32,26 +32,26 @@
     </section>
     <section id="ResultsState" class="mt-3" data-step="2" style="display: none">
         <div class="card w-100 mx-auto mt-5 bg-dark text-light">
-            <h5 class="card-header">Here are your Loopy Science results!</h5>
+            <h5 class="card-header">Results</h5>
             <div class="card-body">
                 <div class="row">
-                    <div class="col planet-total earth text-center" data-type="Earthlike body">
-                        <h3>ELW</h3>
-                        <span class="total display-2">0</span>
-                        <h6>Top Star Type</h6>
-                        <h4></h4>
+                    <div class="col d-flex justify-content-center align-items-center text-center planet-total earth"
+                         data-type="Earthlike body">
+                        <div class=""><small class="d-block text-uppercase text-warning ">total</small> <h6>Earthlike worlds</h6>
+                            <span class="total h1">0</span></div>
+
                     </div>
-                    <div class="col planet-total ammonia text-center" data-type="Ammonia world">
-                        <h3>AW</h3>
-                        <span class="total display-2">0</span>
-                        <h6>Top Star Type</h6>
-                        <h4></h4>
+                    <div class="col d-flex justify-content-center align-items-center text-center planet-total ammonia"
+                         data-type="Ammonia world">
+                        <div class=""><small class="d-block text-uppercase text-warning">total</small><h6> Ammonia worlds</h6>
+                            <span class="total h1">0</span></div>
+
                     </div>
-                    <div class="col planet-total water text-center" data-type="Water world">
-                        <h3>WW</h3>
-                        <span class="total display-2">0</span>
-                        <h6>Top Star Type</h6>
-                        <h4></h4>
+                    <div class="col d-flex justify-content-center align-items-center text-center planet-total water"
+                         data-type="Water world">
+                        <div class=""><small class="d-block text-uppercase">total</small><h6> Water worlds</h6>
+                            <span class="total h1">0</span></div>
+
                     </div>
                 </div>
             </div>

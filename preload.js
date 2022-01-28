@@ -18,14 +18,7 @@ let body_cache = []
 let stars_by_systems = []
 let planet_totals = []
 let body_count = []
-let top_star_types = {
-  'Earthlike body':
-    0,
-  'Ammonia world':
-    0,
-  'Water world':
-    0,
-}
+
 let journal_path = ''
 let file_count = 0
 let files_total = 0
@@ -208,6 +201,7 @@ function detectStarSystemByBody (body_name) {
 }
 
 function checkStarProgress () {
+  console.log(file_count, files_total, star_cache.length, processing_bodies)
   if (file_count >= files_total && !star_cache.length && !processing_bodies) {
     processBodyCache()
   }
@@ -215,14 +209,20 @@ function checkStarProgress () {
 
 function processBodyCache () {
   processing_bodies = 1
-
+  if (!body_cache.length) {
+    setTimeout(outputResults, 1500)
+    return true
+  }
   $.each(body_cache, function (index, entry) {
 
     catalogBody(entry)
     if (index >= body_cache.length - 1) {
-      setTimeout(outputResults, 1000)
+      setTimeout(outputResults, 1500)
+      return true
     }
+    return false
   })
+  return true
 }
 
 function processJournalEvent (entry_decoded, file) {
@@ -353,10 +353,16 @@ function setIcon (element, inverse) {
   var iconSpan = $(element).find('[data-fa-i2svg]')
 
   if (inverse == false) {
-    $(iconSpan).removeClass('fa-sort').removeClass('fa-sort-down').addClass('fa-sort-up')
+    $(iconSpan).
+      removeClass('fa-sort').
+      removeClass('fa-sort-down').
+      addClass('fa-sort-up')
 
   } else {
-    $(iconSpan).removeClass('fa-sort').removeClass('fa-sort-up').addClass('fa-sort-down')
+    $(iconSpan).
+      removeClass('fa-sort').
+      removeClass('fa-sort-up').
+      addClass('fa-sort-down')
   }
   $(element).
     siblings().
@@ -376,8 +382,10 @@ function outputResults () {
       0,
   }
   star_types = sortObjectByKeys(star_types)
-  Object.entries(star_types).forEach(entry => {
+  Object.entries(star_types).map(entry => {
+
     const [star_type, planets] = entry
+
     if (!planets['Earthlike body'] && !planets['Ammonia world'] &&
       !planets['Water world']) {
       return false
@@ -385,42 +393,39 @@ function outputResults () {
     let new_row = $(`<tr data-star-type="${star_type}">`)
     new_row.append(`<td>${star_type}</td>`)
 
-    Object.entries(planets).forEach(planet => {
-      let [planet_type, count] = planet
+    Object.entries(planets).map(planet => {
+
+      const [planet_type, count] = planet
+
       if (typeof planet_totals[planet_type] === 'undefined') {
         planet_totals[planet_type] = 0
       }
+
       planet_totals[planet_type] += count
-      if (count > current_count[planet_type]) {
-        console.log(current_count[planet_type])
-        current_count[planet_type] = count
-        top_star_types[planet_type] = star_type
 
-
-      }
       new_row.append(
         `<td data-planet-type="${planet_type}" data-count="${count}">${count}</td>`)
+      return true
     })
     $('#ResultsContainer').append(new_row)
+    return true
   })
   Object.entries(planet_totals).forEach(planet => {
-    let [planet_type, count] = planet
+    const [planet_type, count] = planet
     $('.planet-total[data-type="' + planet_type + '"]').
       find('span.total').
-      text(count).parent().find('h4').text(top_star_types[planet_type])
-
+      text(count)
   })
-  var table = $('table')
 
   $('th.sortable').click(function (e) {
-    var table = $(this).parents('table').eq(0)
-    var ths = table.find('tr:gt(0)').toArray().sort(compare($(this).index()))
+    const table = $(this).parents('table').eq(0)
+    let ths = table.find('tr:gt(0)').toArray().sort(compare($(this).index()))
     this.asc = !this.asc
     if (!this.asc)
       ths = ths.reverse()
     for (var i = 0; i < ths.length; i++)
       table.append(ths[i])
-
+    console.log(ths)
     setIcon(e.target, this.asc)
   })
 
@@ -459,8 +464,8 @@ function processJournals () {
     }
 
     console.log(Object.entries(star_types).length)
-    if(Object.entries(star_types).length){
-      outputResults ()
+    if (Object.entries(star_types).length) {
+      setTimeout(outputResults, 1500)
     }
   })
 }
