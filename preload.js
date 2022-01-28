@@ -44,7 +44,6 @@ function writeDB (db, data) {
 // write JSON string to a file
   try {
     fs.writeFileSync(db, data)
-    console.log('JSON data is saved.')
 
   } catch (err) {
     console.error(err)
@@ -119,8 +118,6 @@ function catalogBody (entry_decoded) {
       //convert body name to array
       star_system = detectStarSystemByBody(entry_decoded['BodyName'])
       if (star_system === null) {
-        console.log('DETECTION FAILED: ', entry_decoded['BodyName'],
-          entry_decoded)
         return null
       }
     }
@@ -167,7 +164,6 @@ function catalogBody (entry_decoded) {
           barycenter_stars.push(possible_star_types[num_from_letter])
         })
 
-        console.log('Barycenter Stars', barycenter_stars)
         barycenter_stars_output += barycenter_stars.toString() + ')'
         if (!star_types.hasOwnProperty(barycenter_stars_output)) {
           star_types[barycenter_stars_output] = {
@@ -201,7 +197,6 @@ function detectStarSystemByBody (body_name) {
 }
 
 function checkStarProgress () {
-  console.log(file_count, files_total, star_cache.length, processing_bodies)
   if (file_count >= files_total && !star_cache.length && !processing_bodies) {
     processBodyCache()
   }
@@ -210,14 +205,14 @@ function checkStarProgress () {
 function processBodyCache () {
   processing_bodies = 1
   if (!body_cache.length) {
-    setTimeout(outputResults, 1500)
+    setTimeout(outputResults, 150)
     return true
   }
   $.each(body_cache, function (index, entry) {
 
     catalogBody(entry)
     if (index >= body_cache.length - 1) {
-      setTimeout(outputResults, 1500)
+      setTimeout(outputResults, 150)
       return true
     }
   })
@@ -328,7 +323,6 @@ function readJournalLineByLine (file) {
     $('#JournalList').append(journal_item)
     var listHistory = document.getElementById('JournalList')
     listHistory.scrollTop = listHistory.scrollHeight
-    console.log(typeof processed_journals, processed_journals)
     processed_journals.push(file)
     file_count++
     checkStarProgress()
@@ -425,7 +419,6 @@ function outputResults () {
       ths = ths.reverse()
     for (var i = 0; i < ths.length; i++)
       table.append(ths[i])
-    console.log(ths)
     setIcon(e.target, this.asc)
   })
 
@@ -463,9 +456,8 @@ function processJournals () {
       return true
     }
 
-    console.log(Object.entries(star_types).length)
     if (Object.entries(star_types).length) {
-      setTimeout(outputResults, 1500)
+      setTimeout(outputResults, 150)
     }
   })
 }
@@ -478,7 +470,5 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#DirectoryPathPreview').val(journal_path)
   star_types = readDB(star_db)
   processed_journals = readDB(journals_db)
-  console.log('processed_journals',processed_journals)
-  setTimeout(processJournals,1000)
-  //processJournals()
+  setTimeout(processJournals,100)
 })
