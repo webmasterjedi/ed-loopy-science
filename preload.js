@@ -49,7 +49,7 @@ function writeDB (db, data) {
   } catch (err) {
     console.error(err)
   }
-  return data
+  return readDB(db)
 }
 
 contextBridge.exposeInMainWorld('ipcRenderer', { ipcRenderer })
@@ -85,7 +85,7 @@ function letterToNumber (letter) {
   return parseInt(letter, 36) - 9
 }
 
-function catalogStarType (entry_decoded, body_id, star_system, star_type) {
+function catalogStarType (body_id, star_system, star_type) {
 
   if (!stars_by_systems.hasOwnProperty(star_system)) {
 
@@ -271,7 +271,7 @@ function processJournalEvent (entry_decoded, file) {
     star_cache.push(star_system + body_id)
     star_type = entry_decoded['StarType'] + subclass + ' ' +
       entry_decoded['Luminosity']
-    catalogStarType(entry_decoded, body_id, star_system, star_type)
+    catalogStarType(body_id, star_system, star_type)
     return true
   }
   /*Bodies*/
@@ -328,6 +328,7 @@ function readJournalLineByLine (file) {
     $('#JournalList').append(journal_item)
     var listHistory = document.getElementById('JournalList')
     listHistory.scrollTop = listHistory.scrollHeight
+    console.log(typeof processed_journals, processed_journals)
     processed_journals.push(file)
     file_count++
     checkStarProgress()
@@ -477,5 +478,7 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#DirectoryPathPreview').val(journal_path)
   star_types = readDB(star_db)
   processed_journals = readDB(journals_db)
-  processJournals()
+  console.log('processed_journals',processed_journals)
+  setTimeout(processJournals,1000)
+  //processJournals()
 })
