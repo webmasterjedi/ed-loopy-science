@@ -36,7 +36,7 @@
   --bs-info-rgb: 13, 202, 240;
   --bs-warning-rgb: 255, 193, 7;
   --bs-danger-rgb: 220, 53, 69;
-  --bs-light-rgb: 255, 128, 0;
+  --bs-light-rgb: 0, 255, 221;
   --bs-dark-rgb: 10, 5, 0;
   --bs-white-rgb: 255, 255, 255;
   --bs-black-rgb: 0, 0, 0;
@@ -55,14 +55,20 @@
 
 .bg-dark {
   --bs-bg-opacity: 0.666;
-  background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
-  border: 1px solid #ff8000;
-  box-shadow: 0 0 5px #de6203;
+  background-color: #dc354521 !important;
+  border: 1px solid #dc3545;
+  box-shadow: 0 0 2px #dc3545;
 }
 .text-light{
-  text-shadow: 0 0 5px #de6203;
+  text-shadow: 0 0 2px #abfff1;
 }
-
+.star-data-row {
+  border: 1px solid #dc3545;
+  text-shadow: 0 0 2px #00ffdd;
+  box-shadow: 0 0 2px #dc3545;
+  color: #00ffdd;
+  background-color: #dc354521;
+}
 .bg-transparent {
   --bs-bg-opacity: 0;
   background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
@@ -70,12 +76,12 @@
 html,
 body {
   height: 100%;
-  background-color: #1f2025;
+  background-color: #000000;
   background-image: url("../assets/bg.jpg");
   background-position: center;
   background-size: cover;
   background-repeat: no-repeat;
-  color: #e6ecef;
+  color: #00ffdd;
   font-family: 'Oxanium', cursive;
 }
 
@@ -83,14 +89,14 @@ body {
   background-position: center;
   background-size: contain;
   background-repeat: no-repeat;
-  color: #ff8000;
+  color: #00ffdd;
   font-weight: 100;
-  text-shadow: 0px 0px 5px black;
+  text-shadow: 0 0 2px #00ffdd;
   min-height: 175px;
   .total{
-    color: #44fff6;
+    color: #00ffdd;
     font-weight: 600;
-    text-shadow: 0 0 5px #00ffb8;
+    text-shadow: 0 0 2px #00ffdd;
   }
   &.earth {
     background-image: url("../assets/earth.png");

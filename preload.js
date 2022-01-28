@@ -220,7 +220,6 @@ function processBodyCache () {
       setTimeout(outputResults, 1500)
       return true
     }
-    return false
   })
   return true
 }
@@ -390,7 +389,7 @@ function outputResults () {
       !planets['Water world']) {
       return false
     }
-    let new_row = $(`<tr data-star-type="${star_type}">`)
+    let new_row = $(`<tr class="star-data-row" data-star-type="${star_type}">`)
     new_row.append(`<td>${star_type}</td>`)
 
     Object.entries(planets).map(planet => {
