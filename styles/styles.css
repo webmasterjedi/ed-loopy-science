@@ -55,9 +55,9 @@
 
 .bg-dark {
   --bs-bg-opacity: 0.666;
-  background-color: #dc354521 !important;
-  border: 1px solid #dc3545;
-  box-shadow: 0 0 2px #dc3545;
+  background-color: rgba(0, 0, 0, 0.666) !important;
+  border: 1px solid rgba(0, 255, 149, 0.333);
+  box-shadow: 0 0 2px #00ff89;
 }
 
 .text-light {
@@ -65,11 +65,11 @@
 }
 
 .star-data-row {
-  border: 1px solid #dc3545;
+  border: 1px solid rgba(0, 255, 149, 0.3);
   text-shadow: 0 0 2px #00ffdd;
-  box-shadow: 0 0 2px #dc3545;
+  box-shadow: 0 0 2px #00ff89;
   color: #00ffdd;
-  background-color: #dc354521;
+  background-color: rgba(0, 0, 0, 0.666);
 }
 
 .bg-transparent {
