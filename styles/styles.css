@@ -88,6 +88,11 @@ body {
   color: #00ffdd;
   font-family: "Oxanium", cursive;
 }
+html.streamer-mode,
+body.streamer-mode {
+  background-color: #00ff00;
+  background-image: none;
+}
 
 .planet-total {
   background-position: center;

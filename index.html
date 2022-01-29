@@ -6,13 +6,37 @@
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="./styles/styles.css"/>
     <script defer src="./node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <script defer src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="h-100">
-<header class="pt-3 text-center">
-    <img style="max-width: 150px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
+<nav class="navbar navbar-dark bg-dark" aria-label="navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand text-light" href="#">Loopy Science v1.1.0</a>
+        <button class="navbar-toggler bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#optionsMenu" aria-controls="optionsMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-cog"></i>
+        </button>
+
+        <div class="navbar-collapse collapse" id="optionsMenu" style="">
+            <ul class="navbar-nav me-auto mb-2">
+                <li class="nav-item">
+                    <button id="EnableWatch" class="btn btn-outline-success text-light" style="display: none"><i class="fas fa-book-reader me-2"></i> Start Auto Watch</button>
+                </li>
+                <li class="nav-item">
+                    <button id="EnableStreamerMode" class="btn btn-outline-success text-light"><i class="fas fa-video me-2"></i> Enable Streamer Mode</button>
+                </li>
+            </ul>
+            <form>
+                <input class="form-control bg-dark text-light" type="text" placeholder="Search" aria-label="Search">
+            </form>
+        </div>
+    </div>
+</nav>
+<header class="row pt-3 text-center">
+    <div class="col-2"></div>
+    <div class="col text-right"></div>
+
 </header>
 <main class="container-fluid h-100">
-
     <section id="ChooseDirectoryState" class="mt-3 d-flex align-items-center" data-step="1">
         <div class="card w-75 m-auto bg-dark text-light">
             <h5 class="card-header">Processing Journals...</h5>
