@@ -13,7 +13,7 @@ const journals_db = path.join(__dirname, 'journals_db.json');
 const local_moment = moment();
 let processed_journals = [];
 let currently_watching = false;
-let auto_process = false
+let auto_process = false;
 let star_types = [];
 let star_cache = [];
 let body_cache = [];
@@ -138,19 +138,22 @@ function catalogBody(entry_decoded) {
       planets_star_id = getStarIdFromPlanetsParents(entry_decoded['Parents']);
 
       if (planets_star_id !== null) {
-
+        console.log('Trying to get star type');
         if (stars_by_systems.hasOwnProperty(star_system) &&
             typeof stars_by_systems[star_system][planets_star_id] !==
             'undefined') {
 
           star_type = stars_by_systems[star_system][planets_star_id];
-
+          console.log(star_type);
         }
         else if (stars_by_systems.hasOwnProperty(star_system)) {
           star_type = stars_by_systems[star_system][1];
+          console.log(star_type);
         }
 
         if (star_types.hasOwnProperty(star_type)) {
+          console.log('Updating Star Types Count', star_type, planet_type,
+              entry_decoded);
           star_types[star_type][planet_type]++;
         }
       }
@@ -183,6 +186,7 @@ function catalogBody(entry_decoded) {
         }
         star_types[barycenter_stars_output][planet_type]++;
       }
+      updateBodyCountDisplay();
     }
   }
 }
@@ -209,7 +213,7 @@ function checkStarProgress() {
   if (file_count >= files_total && !star_cache.length && !processing_bodies) {
     processBodyCache();
   }
-  if(auto_process){
+  if (auto_process) {
     processBodyCache();
   }
 }
@@ -220,15 +224,18 @@ function processBodyCache() {
     setTimeout(outputResults, 150);
     return true;
   }
-  $.each(body_cache, function(index, entry) {
+  let current_body;
+  while (current_body = body_cache.pop()) {
+    catalogBody(current_body);
+  }
 
-    catalogBody(entry);
-    if (index >= body_cache.length - 1) {
-      console.log('done');
-      setTimeout(outputResults, 150);
-      return true;
-    }
-  });
+  if (!body_cache.length) {
+    console.log('done');
+    setTimeout(outputResults, 150);
+    processing_bodies = 0;
+    return true;
+  }
+
   return true;
 }
 
@@ -303,6 +310,9 @@ function processJournalEvent(entry_decoded) {
 
 function cacheBody(entry_decoded) {
   body_cache.push(entry_decoded);
+  if (auto_process) {
+    checkStarProgress();
+  }
 }
 
 function readJournalLineByLine(file) {
@@ -576,6 +586,9 @@ function parseBuffer(buffer) {
         stopWatchAndProcess(currently_watching);
         processed_journals.push(currently_watching);
         writeDB(journals_db, processed_journals);
+      }
+      else {
+        console.log('Processing Event', lineJSON, stars_by_systems, body_cache);
       }
     }
   });
