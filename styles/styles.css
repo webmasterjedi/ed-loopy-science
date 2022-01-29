@@ -94,6 +94,11 @@ body.streamer-mode {
   background-image: none;
 }
 
+@property --num {
+  syntax: "<integer>";
+  initial-value: 0;
+  inherits: false;
+}
 .planet-total {
   background-position: center;
   background-size: contain;
@@ -104,9 +109,14 @@ body.streamer-mode {
   min-height: 175px;
 }
 .planet-total .total {
+  transition: --num 5s;
+  counter-set: num var(--num);
   color: #00ffdd;
   font-weight: 600;
   text-shadow: 0 0 2px #00ffdd;
+}
+.planet-total .total::after {
+  content: counter(num);
 }
 .planet-total.earth {
   background-image: url("../assets/earth.png");
