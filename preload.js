@@ -7,23 +7,34 @@ const path = require('path');
 const os = require('os');
 const moment = require('moment');
 const LineByLineReader = require('line-by-line');
-const config = path.join(__dirname, 'config.json');
-const star_db = path.join(__dirname, 'stars_db.json');
-const journals_db = path.join(__dirname, 'journals_db.json');
+const db_dir = 'db/';
+const config_db = path.join(__dirname, db_dir, 'config.json');
+const stars_db = path.join(__dirname, db_dir, 'stars_db.json');
+const stars_by_systems_db = path.join(__dirname, db_dir,
+    'stars_by_systems_db.json');
+const bodies_db = path.join(__dirname, db_dir, 'bodies_db.json');
+const journals_db = path.join(__dirname, db_dir, 'journals_db.json');
+
 const local_moment = moment();
+
+let config = {
+  journal_path: '',
+  streamer_mode: 0,
+
+};
+
+let file_count = 0;
+let files_total = 0;
+let processing_bodies = 0;
 let processed_journals = [];
-let currently_watching = false;
+let detected_active_journal = false;
 let auto_process = false;
 let star_types = [];
 let star_cache = [];
 let body_cache = [];
 let stars_by_systems = [];
-let body_count = [];
-
-let journal_path = '';
-let file_count = 0;
-let files_total = 0;
-let processing_bodies = 0;
+let bodies_processed = [];
+let planet_totals = [];
 
 function readDB(db) {
   // read & parse JSON object from file
@@ -66,6 +77,8 @@ function sortObjectByKeys(obj) {
 function chooseDirectory() {
   return ipcRenderer.sendSync('openDirectory', {});
 }
+
+
 
 function getStarIdFromPlanetsParents(parents) {
   if (typeof parents !== 'object') {
@@ -110,50 +123,49 @@ function catalogStarType(body_id, star_system, star_type) {
   checkStarProgress();
 }
 
-function catalogBody(entry_decoded) {
+function catalogBody(elite_event) {
   /*Planet Events*/
   let planet_type = 0;
   let star_system = undefined;
   let star_type;
-  if (entry_decoded.hasOwnProperty('PlanetClass')) {
+
+  if (elite_event.hasOwnProperty('PlanetClass')) {
+    if (typeof bodies_processed[elite_event['BodyName']] !== 'undefined') {
+      return false;
+    }
     if (typeof star_system === 'undefined' ||
-        typeof entry_decoded['StarSystem'] === 'undefined') {
+        typeof elite_event['StarSystem'] === 'undefined') {
       //convert body name to array
-      star_system = detectStarSystemByBody(entry_decoded['BodyName']);
+      star_system = detectStarSystemByBody(elite_event['BodyName']);
       if (star_system === null) {
         return null;
       }
     }
 
-    switch (entry_decoded['PlanetClass']) {
+    switch (elite_event['PlanetClass']) {
       case 'Earthlike body' :
       case 'Ammonia world' :
       case 'Water world' :
-        planet_type = entry_decoded['PlanetClass'];
+        planet_type = elite_event['PlanetClass'];
         break;
     }
     if (planet_type) {
       let planets_star_id;
 
-      planets_star_id = getStarIdFromPlanetsParents(entry_decoded['Parents']);
+      planets_star_id = getStarIdFromPlanetsParents(elite_event['Parents']);
 
       if (planets_star_id !== null) {
-        console.log('Trying to get star type');
         if (stars_by_systems.hasOwnProperty(star_system) &&
             typeof stars_by_systems[star_system][planets_star_id] !==
             'undefined') {
 
           star_type = stars_by_systems[star_system][planets_star_id];
-          console.log(star_type);
         }
         else if (stars_by_systems.hasOwnProperty(star_system)) {
           star_type = stars_by_systems[star_system][1];
-          console.log(star_type);
         }
 
         if (star_types.hasOwnProperty(star_type)) {
-          console.log('Updating Star Types Count', star_type, planet_type,
-              entry_decoded);
           star_types[star_type][planet_type]++;
         }
       }
@@ -162,7 +174,7 @@ function catalogBody(entry_decoded) {
         //if no system name in codex
 
         let barycenter_stars_output = 'Barycenter (';
-        let barycenter_code = entry_decoded['BodyName'].replace(
+        let barycenter_code = elite_event['BodyName'].replace(
             star_system + ' ',
             '').replace(/[0-9]/g, '').replace(' ', '');
         let barycenter_stars = [];
@@ -186,11 +198,17 @@ function catalogBody(entry_decoded) {
         }
         star_types[barycenter_stars_output][planet_type]++;
       }
-      updateBodyCountDisplay();
+
     }
   }
-}
+  bodies_processed[elite_event['BodyName']] = elite_event['BodyName'];
+  //updateScanStatusDisplay('Processed: ' + planet_type + ' / ' + bodies_processed[elite_event['BodyName']])
 
+  //console.log('body processed:', bodies_processed[elite_event['BodyName']])
+}
+function updateScanStatusDisplay(msg){
+  $('#ScanProgress').text(msg)
+}
 function detectStarSystemByBody(body_name) {
   let detected_system_name = null;
   Object.entries(stars_by_systems).forEach(system => {
@@ -200,16 +218,14 @@ function detectStarSystemByBody(body_name) {
     }
   });
   if (detected_system_name === null) {
-    console.log('Couldnt detect:', stars_by_systems, body_name);
+    //console.log('Couldnt detect:', stars_by_systems, body_name);
     return null;
   }
   return detected_system_name;
 }
 
 function checkStarProgress() {
-  console.log(
-      file_count >= files_total && !star_cache.length && !processing_bodies,
-      file_count, files_total, star_cache.length, processing_bodies);
+  //console.log(file_count, files_total, star_cache.length, processing_bodies)
   if (file_count >= files_total && !star_cache.length && !processing_bodies) {
     processBodyCache();
   }
@@ -219,6 +235,7 @@ function checkStarProgress() {
 }
 
 function processBodyCache() {
+  //console.log('Processing bodies')
   processing_bodies = 1;
   if (!body_cache.length) {
     setTimeout(outputResults, 150);
@@ -239,68 +256,57 @@ function processBodyCache() {
   return true;
 }
 
-function processJournalEvent(entry_decoded) {
+function processJournalEvent(elite_event) {
   let star_type;
   let star_system;
 
-  if (entry_decoded && entry_decoded['event'] === 'Shutdown') {
+  if (elite_event && elite_event['event'] === 'Shutdown') {
     return true;
   }
   //check for the type of scan we need
-  if (entry_decoded && ((entry_decoded['event'] !== 'Scan') ||
-      (typeof entry_decoded['ScanType'] !== 'undefined' &&
-          entry_decoded['ScanType'] === 'NavBeaconDetail'))) {
+  if (elite_event && ((elite_event['event'] !== 'Scan') ||
+      (typeof elite_event['ScanType'] !== 'undefined' &&
+          elite_event['ScanType'] === 'NavBeaconDetail'))) {
     return false;
   }
 
-  if (entry_decoded && entry_decoded.hasOwnProperty('BodyName') &&
-      body_count.hasOwnProperty(entry_decoded['BodyName'])) {
-    entry_decoded = null;
-    return false;
-  }
 
-  star_system = entry_decoded['StarSystem'];
-  body_count[entry_decoded['BodyName']] = entry_decoded['BodyName'];
+
+
+  star_system = elite_event['StarSystem'];
+
   /*Star Entries*/
   //checks to make sure scan is a star
-  if (entry_decoded.hasOwnProperty('ScanType') &&
-      entry_decoded.hasOwnProperty('Luminosity') &&
-      entry_decoded.hasOwnProperty('Subclass')) {
-    let body_id = Number(entry_decoded['BodyID']);
+  if (elite_event.hasOwnProperty('ScanType') &&
+      elite_event.hasOwnProperty('Luminosity') &&
+      elite_event.hasOwnProperty('Subclass')) {
+    let body_id = Number(elite_event['BodyID']);
 
     if (typeof star_system === 'undefined' ||
-        typeof entry_decoded['StarSystem'] === 'undefined') {
+        typeof elite_event['StarSystem'] === 'undefined') {
       return false;
-      //gets star system name if missing. hacky as fuck
-      //convert body name to array
-      let body_name = entry_decoded['BodyName'];
-      //remove last letters if has parents
-      if (typeof entry_decoded['Parents'] !== 'undefined') {
-        body_name = body_name.split(' ');
-        body_name.pop();
-        body_name = body_name.join(' ');
-      }
-      star_system = body_name;
+
     }
 
-    let subclass = entry_decoded['Subclass'];
+    let subclass = elite_event['Subclass'];
     if (typeof subclass === 'undefined') {
       return false;
     }
     star_cache.push(star_system + body_id);
-    star_type = entry_decoded['StarType'] + subclass + ' ' +
-        entry_decoded['Luminosity'];
+    star_type = elite_event['StarType'] + subclass + ' ' +
+        elite_event['Luminosity'];
     catalogStarType(body_id, star_system, star_type);
     return false;
   }
   /*Bodies*/
   else {
-    if (entry_decoded.hasOwnProperty('PlanetClass')) {
-      if (entry_decoded['PlanetClass'] === 'Earthlike body' ||
-          entry_decoded['PlanetClass'] === 'Ammonia world' ||
-          entry_decoded['PlanetClass'] === 'Water world') {
+    if (elite_event.hasOwnProperty('PlanetClass') && typeof elite_event['ScanType'] !== 'undefined') {
+      if (elite_event['PlanetClass'] === 'Earthlike body' ||
+          elite_event['PlanetClass'] === 'Ammonia world' ||
+          elite_event['PlanetClass'] === 'Water world') {
 
-        cacheBody(entry_decoded);
+        cacheBody(elite_event);
+
         return false;
       }
     }
@@ -308,15 +314,15 @@ function processJournalEvent(entry_decoded) {
   return false;
 }
 
-function cacheBody(entry_decoded) {
-  body_cache.push(entry_decoded);
+function cacheBody(elite_event) {
+  body_cache.push(elite_event);
   if (auto_process) {
     checkStarProgress();
   }
 }
 
 function readJournalLineByLine(file) {
-  let logPath = journal_path + '\\' + file;
+  let logPath = config.journal_path + '\\' + file;
   let complete_file = false;
   let lr = new LineByLineReader(logPath, {
     encoding: 'utf8',
@@ -329,14 +335,14 @@ function readJournalLineByLine(file) {
   });
   lr.on('line', function(line) {
     //Parse JSON from Journal file
-    let entry_decoded;
-    if (!entry_decoded) {
+    let elite_event;
+    if (!elite_event) {
       try {
         complete_file = processJournalEvent(JSON.parse(line));
       }
       catch (e) {
         console.error(e);
-        entry_decoded = null;
+        elite_event = null;
         return false;
       }
     }
@@ -353,11 +359,11 @@ function readJournalLineByLine(file) {
     const listHistory = document.getElementById('JournalList');
     listHistory.scrollTop = listHistory.scrollHeight;
 
-    const mtime = moment(fs.statSync(journal_path + '/' + file).mtime);
+    const mtime = moment(fs.statSync(config.journal_path + '/' + file).mtime);
     checkStarProgress();
     if (!complete_file && local_moment.diff(mtime, 'days') === 0) {
       console.log('Todays Log found', file);
-      currently_watching = journal_path + '/' + file;
+      detected_active_journal = config.journal_path + '/' + file;
       return true;
     }
 
@@ -405,32 +411,101 @@ function setIcon(element, inverse) {
 }
 
 function outputResults() {
+  //sort stars
   star_types = sortObjectByKeys(star_types);
+  //update display
+  updateBodyCountDisplay();
+  //switch steps
+  $('[data-step="1"]').removeClass('d-flex').slideUp();
+  $('[data-step="2"]').slideUp().slideDown();
+
+  //add events for search filtering
+  $('#StarSearch').on('keyup', function() {
+    const value = $(this).val().toLowerCase();
+    $('#ResultsContainer tr').filter(function() {
+      $(this).
+          toggle(
+              $(this).find('td').first().text().toLowerCase().indexOf(value) >
+              -1);
+    });
+  });
+  //store values to db
+  writeDB(stars_db, star_types);
+  writeDB(journals_db, processed_journals);
+  writeDB(bodies_db, bodies_processed);
+
+  //checks if we have detected a active journal
+  if (detected_active_journal) {
+    //Show enable watch button and setup click event
+    $('#EnableWatch').show().on('click', (e) => {
+      //set auto_process flag
+      auto_process = true;
+      //update button styles
+      $('#EnableWatch').
+          removeClass('text-light').
+          removeClass('btn-outline-success').
+          addClass('btn-outline-danger').
+          addClass('text-danger').
+          html(
+              '<i class="fas fa-book-reader me-2"></i> Auto Watch is on <i class="fas fa-check"></i>').
+          off('click');
+      //kick off watch process
+      watchAndProcess(detected_active_journal);
+    });
+  }
+}
+
+function updateBodyCountDisplay() {
+  let planet_totals = {}
+  //sets initial counts
+  let newELWCount = 0;
+  let newAWCount = 0;
+  let newWWCount = 0;
   $('#ResultsContainer').html('');
+  //build/rebuild table and counts
   Object.entries(star_types).forEach(entry => {
-
     let [star_type, planets] = entry;
-
+    //checks for empty stars
     if (!planets['Earthlike body'] && !planets['Ammonia world'] &&
         !planets['Water world']) {
       return false;
     }
+    //remames neutrons
     if (star_type === 'N0 VII') {
       star_type = 'Neutron';
     }
+    //builds html row
     let new_row = $(`<tr class="star-data-row" data-star-type="${star_type}">`);
+    //adds first column for star type
     new_row.append(`<td>${star_type}</td>`);
-
+    //builds columns for each body type
     Object.entries(planets).forEach(planet => {
       let [planet_type, count] = planet;
+      //initialize counter for planet typw
+      if (typeof planet_totals[planet_type] === 'undefined') {
+        planet_totals[planet_type] = 0;
+      }
+      //update totals
+      planet_totals[planet_type] += parseInt(count);
+      //update each planet types count, trying some css animation trick that
+      // doesnt seem to work yet
+      $('.planet-total.earth .total').
+          text('').
+          css('--num', planet_totals['Earthlike body']);
+      $('.planet-total.ammonia .total').
+          text('').
+          css('--num', planet_totals['Ammonia world']);
+      $('.planet-total.water .total').
+          text('').
+          css('--num', planet_totals['Water world']);
+      //add column to html
       new_row.append(
           `<td data-planet-type="${planet_type}" data-count="${count}">${count}</td>`);
     });
+    //append the whole row
     $('#ResultsContainer').append(new_row);
-
   });
-  updateBodyCountDisplay();
-
+  //click event for sorting the table, ripped from stack overflow lol
   $('th.sortable').click(function(e) {
     const table = $(this).parents('table').eq(0);
     let ths = table.find('tr:gt(0)').toArray().sort(compare($(this).index()));
@@ -444,96 +519,65 @@ function outputResults() {
     setIcon(e.target, this.asc);
   });
 
-  $('[data-step="1"]').removeClass('d-flex').slideUp();
-  $('[data-step="2"]').slideUp().slideDown();
-  $('#StarSearch').on('keyup', function() {
-    const value = $(this).val().toLowerCase();
-    $('#ResultsContainer tr').filter(function() {
-      $(this).
-          toggle(
-              $(this).find('td').first().text().toLowerCase().indexOf(value) >
-              -1);
-    });
-    updateBodyCountDisplay();
-  });
-  //write to file
-  writeDB(star_db, star_types);
-  writeDB(journals_db, processed_journals);
-  if (currently_watching) {
-    //enable watch trigger
-    $('#EnableWatch').show().on('click', (e) => {
-      auto_process = true;
-      $('#EnableWatch').
-          removeClass('text-light').
-          removeClass('btn-outline-success').
-          addClass('btn-outline-danger').
-          addClass('text-danger').
-          html(
-              '<i class="fas fa-book-reader me-2"></i> Auto Watch is on <i class="fas fa-check"></i>').
-          off('click');
-      watchAndProcess(currently_watching);
-    });
-  }
-}
-
-function updateBodyCountDisplay() {
-  let newELWCount = 0;
-  let newAWCount = 0;
-  let newWWCount = 0;
-
-  document.querySelectorAll('#ResultsContainer tr').forEach((tr) => {
-
-    newELWCount += parseInt(tr.childNodes[1].innerText);
-    newAWCount += parseInt(tr.childNodes[2].innerText);
-    newWWCount += parseInt(tr.childNodes[3].innerText);
-
-  });
-  console.log(newELWCount, newAWCount, newWWCount);
-  $('.planet-total.earth .total').text('').css('--num', newELWCount);
-  $('.planet-total.ammonia .total').text('').css('--num', newAWCount);
-  $('.planet-total.water .total').text('').css('--num', newWWCount);
 }
 
 function getTotalLogsCount(files) {
+  //set initial total to 0
   let total = 0;
+  //loop through all files
   files.forEach(file => {
+    //check if file had already been processed and is right extension
     if (!processed_journals.includes(file) && path.extname(file) === '.log') {
+      //add to count if passes check
       total++;
     }
   });
+  //returns the new total
   return total;
 }
 
 function processJournals() {
-  fs.readdir(journal_path, (err, files) => {
+  //Read through journal directory
+  fs.readdir(config.journal_path, (err, files) => {
     if (err) {
+      //error happened blah blah
       console.log(err);
       return false;
     }
+    //store the total files we detect,
+    //this is to compare with current files to detect if complete
     files_total = getTotalLogsCount(files);
+    //only process if there are files
     if (files_total) {
+      //loop through each file
       files.forEach(file => {
+        //checks if this journal file has been processed and is the right type
+        // of file
         if (!processed_journals.includes(file) && path.extname(file) ===
             '.log') {
+          //calls function to read file line by line
+          //each line is a game event in JSON format
           readJournalLineByLine(file);
         }
       });
+      //return when done, wont fire if all journals are cached
       return true;
     }
 
+    //if we made it this far we are just using cached data
     if (Object.entries(star_types).length) {
+      //calls function to output all data to screen
+      //setTimeout just incase
       setTimeout(outputResults, 150);
     }
   });
 }
 
-let fileSize;
-
 function watchAndProcess(journal_file) {
 
-  currently_watching = journal_file;
+  detected_active_journal = journal_file;
 // Obtain the initial size of the log file before we begin watching it.
-  fileSize = fs.statSync(journal_file).size;
+  let fileSize = fs.statSync(journal_file).size;
   fs.watchFile(journal_file, function(current, previous) {
     // Check if file modified time is less than last time.
     // If so, nothing changed so don't bother parsing.
@@ -571,42 +615,79 @@ function watchAndProcess(journal_file) {
 }
 
 function stopWatchAndProcess() {
-  fs.unwatchFile(currently_watching);
+  fs.unwatchFile(detected_active_journal);
 }
 
 function parseBuffer(buffer) {
   // Iterate over each line in the buffer.
   buffer.toString().split(os.EOL).forEach(function(line) {
-    // Do stuff with the line :)
+    // Check if line has anything to process
     if (line.length) {
+      //convert to json, not sure why I have to parse twice but it works
       let lineJSON = JSON.parse(JSON.parse(JSON.stringify(line)));
-
+      /*
+        processJournalEvent returns true if
+        it detects Event: Shutdown from game
+        so we know this journal file is complete
+        Returns false for any other entry
+      */
       if (processJournalEvent(lineJSON)) {
         console.log('stop watching, and mark as processed');
-        stopWatchAndProcess(currently_watching);
-        processed_journals.push(currently_watching);
+        //these next actions end the file watch process and cache the journal
+        // to localdb
+        stopWatchAndProcess(detected_active_journal);
+        processed_journals.push(detected_active_journal);
         writeDB(journals_db, processed_journals);
       }
       else {
+        //Still watching, mainly outputting to console for debugging here
         console.log('Processing Event', lineJSON, stars_by_systems, body_cache);
       }
     }
   });
 }
 
+/*Event listener for button that toggles streamer mode*/
 function toggleStreamerMode(e) {
-  console.log('click');
+  e.preventDefault();
   $('body').toggleClass('streamer-mode');
+  config.streamer_mode = !config.streamer_mode;
+  writeDB(config_db, config);
 }
 
-/*bring in jQuery (fuck the haters or am I trolling?)*/
 window.addEventListener('DOMContentLoaded', () => {
+  //omg jQuery! how old are you?
   window.$ = window.jQuery = require('jquery');
-  journal_path = os.homedir() +
-      '\\Saved Games\\Frontier Developments\\Elite Dangerous';
-  $('#DirectoryPathPreview').val(journal_path);
-  star_types = readDB(star_db);
+
+  //read config from local db
+  config = readDB(config_db);
+
+  //set streamer mode property if first time
+  if (typeof config.streamer_mode === 'undefined') {
+    config.streamer_mode = 0;
+    writeDB(config_db, config);
+  }
+
+  //set journal location property if first time
+  if (typeof config.journal_path === 'undefined' || config.journal_path ===
+      '') {
+    config.journal_path = os.homedir() +
+        '\\Saved Games\\Frontier Developments\\Elite Dangerous';
+    writeDB(config_db, config);
+  }
+  //Set the directory path preview input to journal path
+  $('#DirectoryPathPreview').val(config.journal_path);
+
+  //read in stars and bodies data storage
+  star_types = readDB(stars_db);
+  stars_by_systems = readDB(stars_by_systems_db);
   processed_journals = readDB(journals_db);
+  bodies_processed = readDB(bodies_db);
+
+  //start the process to loop through all journals
   setTimeout(processJournals, 100);
+
+  /*UI events*/
   $('#EnableStreamerMode').on('click', toggleStreamerMode);
+
 });

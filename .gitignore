@@ -3,5 +3,4 @@ out
 .idea
 /assets/bodies.psd
 config.json
-stars_db.json
-journals_db.json
+db/*
