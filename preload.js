@@ -43,7 +43,6 @@ function readDB(db, expects) {
   }
   try {
     const file_contents = fs.readFileSync(db, {encoding: 'utf-8', flag: 'r'});
-    console.log('File contents: ', db, file_contents, typeof file_contents);
     return JSON.parse(file_contents.toString());
   }
   catch (err) {
@@ -56,7 +55,6 @@ function writeDB(db, data) {
   // read JSON object from file
   // convert JSON object to string
   const to_json = JSON.stringify(data);
-  console.log(typeof data, to_json);
 // write JSON string to a file
   try {
     fs.writeFileSync(db, to_json);
@@ -237,7 +235,7 @@ function catalogBody(elite_event) {
     }
   }
   bodies_processed[elite_event['BodyName']] = elite_event['BodyName'];
-  updateScanStatusDisplay('Processed: ' + planet_type + ' / ' + bodies_processed[elite_event['BodyName']])
+  updateScanStatusDisplay('Processed: ' + body_type + ' / ' + bodies_processed[elite_event['BodyName']])
 
 }
 
@@ -309,7 +307,7 @@ function processJournalEvent(elite_event) {
 
   /*Star Entries*/
   //checks to make sure scan is a star
-  if (elite_event.hasOwnProperty('ScanType') &&
+  if (elite_event.hasOwnProperty('StarType') &&
       elite_event.hasOwnProperty('Luminosity') &&
       elite_event.hasOwnProperty('Subclass')) {
     let body_id = Number(elite_event['BodyID']);
@@ -321,9 +319,6 @@ function processJournalEvent(elite_event) {
     }
 
     let subclass = elite_event['Subclass'];
-    if (typeof subclass === 'undefined') {
-      return false;
-    }
     star_cache.push(star_system + body_id);
     star_type = elite_event['StarType'] + subclass + ' ' +
         elite_event['Luminosity'];
