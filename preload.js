@@ -237,10 +237,8 @@ function catalogBody(elite_event) {
     }
   }
   bodies_processed[elite_event['BodyName']] = elite_event['BodyName'];
-  //updateScanStatusDisplay('Processed: ' + planet_type + ' / ' +
-  // bodies_processed[elite_event['BodyName']])
+  updateScanStatusDisplay('Processed: ' + planet_type + ' / ' + bodies_processed[elite_event['BodyName']])
 
-  //console.log('body processed:', bodies_processed[elite_event['BodyName']])
 }
 
 function updateScanStatusDisplay(msg) {
@@ -255,17 +253,13 @@ function detectStarSystemByBody(body_name) {
       return detected_system_name = system_name;
     }
   });
-  if (detected_system_name === null) {
-    //console.log('Couldnt detect:', stars_by_systems, body_name);
-    return null;
-  }
+
   return detected_system_name;
 }
 
 function checkStarProgress() {
   //console.log(file_count, files_total, star_cache.length, processing_bodies)
   if (file_count >= files_total && !star_cache.length && !processing_bodies) {
-    console.log(stars_by_systems);
     writeDB(stars_by_systems_db, stars_by_systems);
     processBodyCache();
   }
@@ -401,7 +395,6 @@ function readJournalLineByLine(file) {
     const mtime = moment(fs.statSync(config.journal_path + '/' + file).mtime);
     checkStarProgress();
     if (!complete_file && local_moment.diff(mtime, 'days') === 0) {
-      console.log('Todays Log found', file);
       detected_active_journal = config.journal_path + '/' + file;
       return true;
     }
@@ -509,15 +502,6 @@ function calculateBodyTotals() {
       text(newAWCount);
   $('.planet-total.water .total').
       text(newWWCount);
-  $('.planet-total .total').each(function() {
-    const $this = $(this);
-    jQuery({Counter: 0}).animate({Counter: $this.text()}, {
-      duration: 2000,
-      step: function() {
-        $this.text(Math.ceil(this.Counter));
-      },
-    });
-  });
 }
 
 function updateBodyCountDisplay() {
@@ -697,7 +681,6 @@ function toggleStreamerMode(e) {
   e.preventDefault();
   $('body').toggleClass('streamer-mode');
   config.streamer_mode = !config.streamer_mode;
-  console.log(config);
   writeDB(config_db, config);
 }
 
@@ -713,7 +696,9 @@ window.addEventListener('DOMContentLoaded', () => {
     config.streamer_mode = 0;
     writeDB(config_db, config);
   }
-
+  if (config.streamer_mode) {
+    $('body').addClass('streamer-mode');
+  }
   //set journal location property if first time
   if (typeof config.journal_path === 'undefined' || config.journal_path ===
       '') {
@@ -735,10 +720,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   /*UI events*/
   $('#EnableStreamerMode').on('click', toggleStreamerMode);
-  if (config.streamer_mode) {
-    $('body').addClass('streamer-mode');
-  }
-  console.log(config);
+
   $('#TriggerClearCache').on('click', clearCacheThenIndex);
 
 });
