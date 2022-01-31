@@ -53,6 +53,24 @@
   --bs-body-bg: #fff;
 }
 
+html,
+body {
+  height: 100%;
+  background-color: #000000;
+  background-image: url("../assets/bg.jpg");
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  color: #00ffdd;
+  font-family: "Oxanium", cursive;
+  overflow-x: hidden;
+}
+html.streamer-mode,
+body.streamer-mode {
+  background-color: #00ff00;
+  background-image: none;
+}
+
 .bg-dark {
   --bs-bg-opacity: 0.666;
   background-color: rgba(0, 0, 0, 0.666) !important;
@@ -77,28 +95,6 @@
   background-color: rgba(var(--bs-dark-rgb), var(--bs-bg-opacity)) !important;
 }
 
-html,
-body {
-  height: 100%;
-  background-color: #000000;
-  background-image: url("../assets/bg.jpg");
-  background-position: center;
-  background-size: cover;
-  background-repeat: no-repeat;
-  color: #00ffdd;
-  font-family: "Oxanium", cursive;
-}
-html.streamer-mode,
-body.streamer-mode {
-  background-color: #00ff00;
-  background-image: none;
-}
-
-@property --num {
-  syntax: "<integer>";
-  initial-value: 0;
-  inherits: false;
-}
 .planet-total {
   background-position: center;
   background-size: contain;
@@ -109,14 +105,9 @@ body.streamer-mode {
   min-height: 175px;
 }
 .planet-total .total {
-  transition: --num 5s;
-  counter-set: num var(--num);
   color: #00ffdd;
   font-weight: 600;
   text-shadow: 0 0 2px #00ffdd;
-}
-.planet-total .total::after {
-  content: counter(num);
 }
 .planet-total.earth {
   background-image: url("../assets/earth.png");

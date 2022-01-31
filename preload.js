@@ -29,34 +29,37 @@ let processing_bodies = 0;
 let processed_journals = [];
 let detected_active_journal = false;
 let auto_process = false;
-let star_types = [];
+let star_types = {};
 let star_cache = [];
 let body_cache = [];
-let stars_by_systems = [];
-let bodies_processed = [];
-let planet_totals = [];
+let stars_by_systems = {};
+let bodies_processed = {};
 
-function readDB(db) {
+function readDB(db, expects) {
   // read & parse JSON object from file
   //return db
+  if(expects === undefined){
+    expects = {}
+  }
   try {
-    return JSON.parse(
-        fs.readFileSync(db, {encoding: 'utf-8', flag: 'r'}).toString());
+    const file_contents = fs.readFileSync(db, {encoding: 'utf-8', flag: 'r'});
+    console.log('File contents: ', db, file_contents, typeof file_contents);
+    return JSON.parse(file_contents.toString());
   }
   catch (err) {
     console.log(err, db);
-    return writeDB(db, []);
+    return writeDB(db, expects);
   }
 }
 
 function writeDB(db, data) {
   // read JSON object from file
   // convert JSON object to string
-  data = JSON.stringify(data);
-
+  const to_json = JSON.stringify(data);
+  console.log(typeof data, to_json);
 // write JSON string to a file
   try {
-    fs.writeFileSync(db, data);
+    fs.writeFileSync(db, to_json);
 
   }
   catch (err) {
@@ -78,7 +81,19 @@ function chooseDirectory() {
   return ipcRenderer.sendSync('openDirectory', {});
 }
 
+function clearCacheThenIndex() {
+  //clear local storages (json files)
+  star_types = writeDB(stars_db, []);
+  stars_by_systems = writeDB(stars_by_systems_db, []);
+  processed_journals = writeDB(journals_db, []);
+  bodies_processed = writeDB(bodies_db, []);
+  $('#JournalList').html('');
+  //switch steps
+  $('[data-step="2"]').removeClass('d-flex').slideUp();
+  $('[data-step="1"]').slideUp().slideDown();
 
+  setTimeout(processJournals, 666);
+}
 
 function getStarIdFromPlanetsParents(parents) {
   if (typeof parents !== 'object') {
@@ -124,10 +139,8 @@ function catalogStarType(body_id, star_system, star_type) {
 }
 
 function catalogBody(elite_event) {
-  /*Planet Events*/
-  let planet_type = 0;
-  let star_system = undefined;
-  let star_type;
+  /*Body Events*/
+  let body_type = 0, star_system, star_type;
 
   if (elite_event.hasOwnProperty('PlanetClass')) {
     if (typeof bodies_processed[elite_event['BodyName']] !== 'undefined') {
@@ -141,51 +154,73 @@ function catalogBody(elite_event) {
         return null;
       }
     }
-
+    //set planet type only on the types we want
     switch (elite_event['PlanetClass']) {
       case 'Earthlike body' :
       case 'Ammonia world' :
       case 'Water world' :
-        planet_type = elite_event['PlanetClass'];
+        body_type = elite_event['PlanetClass'];
         break;
     }
-    if (planet_type) {
-      let planets_star_id;
-
-      planets_star_id = getStarIdFromPlanetsParents(elite_event['Parents']);
-
+    //move forward if we have a planet type set
+    if (body_type) {
+      //try to get a star id from the stars to systems references.
+      let planets_star_id = getStarIdFromPlanetsParents(elite_event['Parents']);
+      //If not null we found a match
       if (planets_star_id !== null) {
+        //make sure star exists
         if (stars_by_systems.hasOwnProperty(star_system) &&
             typeof stars_by_systems[star_system][planets_star_id] !==
             'undefined') {
-
+          //get the star type
           star_type = stars_by_systems[star_system][planets_star_id];
         }
-        else if (stars_by_systems.hasOwnProperty(star_system)) {
+        //star type not found, try to find using index
+        else if (typeof stars_by_systems[star_system][0] !== 'undefined') {
+          star_type = stars_by_systems[star_system][0];
+        }
+        else if (typeof stars_by_systems[star_system][1] !== 'undefined') {
           star_type = stars_by_systems[star_system][1];
         }
-
-        if (star_types.hasOwnProperty(star_type)) {
-          star_types[star_type][planet_type]++;
+        //add count if we match a star to body
+        if (star_type && star_types.hasOwnProperty(star_type)) {
+          star_types[star_type][body_type]++;
         }
       }
       else {
         //barycenter
         //if no system name in codex
-
+        //Setup new Barycenter system
+        let barycenter_stars = [];
+        let possible_star_types = Object.values(stars_by_systems[star_system]);
         let barycenter_stars_output = 'Barycenter (';
         let barycenter_code = elite_event['BodyName'].replace(
             star_system + ' ',
-            '').replace(/[0-9]/g, '').replace(' ', '');
-        let barycenter_stars = [];
+            '');
+        barycenter_code = barycenter_code.replace(/[0-9]/g, '');
+        barycenter_code = barycenter_code.replace(/[a-f]/g, '');
+        barycenter_code = barycenter_code.replace(' ', '');
+        barycenter_code = barycenter_code.split(' ')[0];
+
         $.each(barycenter_code.split(''), function(index, value) {
           const num_from_letter = letterToNumber(value) - 1;
-          let possible_star_types = Object.values(
-              stars_by_systems[star_system]);
-          barycenter_stars.push(possible_star_types[num_from_letter]);
-        });
 
-        barycenter_stars_output += barycenter_stars.toString() + ')';
+          if (typeof possible_star_types[num_from_letter] !== 'undefined') {
+            barycenter_stars.push(possible_star_types[num_from_letter]);
+          }
+          else {
+            console.log(value, barycenter_code);
+            console.log(elite_event['BodyName'], stars_by_systems[star_system]);
+          }
+
+        });
+        if (barycenter_stars.length > 1) {
+          barycenter_stars_output += barycenter_stars.toString() + ')';
+        }
+        else {
+          barycenter_stars_output = barycenter_stars[0];
+        }
+
         if (!star_types.hasOwnProperty(barycenter_stars_output)) {
           star_types[barycenter_stars_output] = {
             'Earthlike body':
@@ -196,19 +231,22 @@ function catalogBody(elite_event) {
                 0,
           };
         }
-        star_types[barycenter_stars_output][planet_type]++;
+        star_types[barycenter_stars_output][body_type]++;
       }
 
     }
   }
   bodies_processed[elite_event['BodyName']] = elite_event['BodyName'];
-  //updateScanStatusDisplay('Processed: ' + planet_type + ' / ' + bodies_processed[elite_event['BodyName']])
+  //updateScanStatusDisplay('Processed: ' + planet_type + ' / ' +
+  // bodies_processed[elite_event['BodyName']])
 
   //console.log('body processed:', bodies_processed[elite_event['BodyName']])
 }
-function updateScanStatusDisplay(msg){
-  $('#ScanProgress').text(msg)
+
+function updateScanStatusDisplay(msg) {
+  $('#ScanProgress').text(msg);
 }
+
 function detectStarSystemByBody(body_name) {
   let detected_system_name = null;
   Object.entries(stars_by_systems).forEach(system => {
@@ -227,9 +265,12 @@ function detectStarSystemByBody(body_name) {
 function checkStarProgress() {
   //console.log(file_count, files_total, star_cache.length, processing_bodies)
   if (file_count >= files_total && !star_cache.length && !processing_bodies) {
+    console.log(stars_by_systems);
+    writeDB(stars_by_systems_db, stars_by_systems);
     processBodyCache();
   }
   if (auto_process) {
+    writeDB(stars_by_systems_db, stars_by_systems);
     processBodyCache();
   }
 }
@@ -270,9 +311,6 @@ function processJournalEvent(elite_event) {
     return false;
   }
 
-
-
-
   star_system = elite_event['StarSystem'];
 
   /*Star Entries*/
@@ -300,7 +338,8 @@ function processJournalEvent(elite_event) {
   }
   /*Bodies*/
   else {
-    if (elite_event.hasOwnProperty('PlanetClass') && typeof elite_event['ScanType'] !== 'undefined') {
+    if (elite_event.hasOwnProperty('PlanetClass') &&
+        typeof elite_event['ScanType'] !== 'undefined') {
       if (elite_event['PlanetClass'] === 'Earthlike body' ||
           elite_event['PlanetClass'] === 'Ammonia world' ||
           elite_event['PlanetClass'] === 'Water world') {
@@ -455,14 +494,37 @@ function outputResults() {
   }
 }
 
-function updateBodyCountDisplay() {
-  let planet_totals = {}
-  //sets initial counts
+function calculateBodyTotals() {
   let newELWCount = 0;
   let newAWCount = 0;
   let newWWCount = 0;
+  Object.values(star_types).forEach((value) => {
+    newELWCount = newELWCount + parseInt(value['Earthlike body']);
+    newAWCount = newAWCount + parseInt(value['Ammonia world']);
+    newWWCount = newWWCount + parseInt(value['Water world']);
+  });
+  $('.planet-total.earth .total').
+      text(newELWCount);
+  $('.planet-total.ammonia .total').
+      text(newAWCount);
+  $('.planet-total.water .total').
+      text(newWWCount);
+  $('.planet-total .total').each(function() {
+    const $this = $(this);
+    jQuery({Counter: 0}).animate({Counter: $this.text()}, {
+      duration: 2000,
+      step: function() {
+        $this.text(Math.ceil(this.Counter));
+      },
+    });
+  });
+}
+
+function updateBodyCountDisplay() {
+  //clear out any current rows
   $('#ResultsContainer').html('');
   //build/rebuild table and counts
+  calculateBodyTotals();
   Object.entries(star_types).forEach(entry => {
     let [star_type, planets] = entry;
     //checks for empty stars
@@ -481,23 +543,6 @@ function updateBodyCountDisplay() {
     //builds columns for each body type
     Object.entries(planets).forEach(planet => {
       let [planet_type, count] = planet;
-      //initialize counter for planet typw
-      if (typeof planet_totals[planet_type] === 'undefined') {
-        planet_totals[planet_type] = 0;
-      }
-      //update totals
-      planet_totals[planet_type] += parseInt(count);
-      //update each planet types count, trying some css animation trick that
-      // doesnt seem to work yet
-      $('.planet-total.earth .total').
-          text('').
-          css('--num', planet_totals['Earthlike body']);
-      $('.planet-total.ammonia .total').
-          text('').
-          css('--num', planet_totals['Ammonia world']);
-      $('.planet-total.water .total').
-          text('').
-          css('--num', planet_totals['Water world']);
       //add column to html
       new_row.append(
           `<td data-planet-type="${planet_type}" data-count="${count}">${count}</td>`);
@@ -652,6 +697,7 @@ function toggleStreamerMode(e) {
   e.preventDefault();
   $('body').toggleClass('streamer-mode');
   config.streamer_mode = !config.streamer_mode;
+  console.log(config);
   writeDB(config_db, config);
 }
 
@@ -661,7 +707,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   //read config from local db
   config = readDB(config_db);
-
+  console.log(config);
   //set streamer mode property if first time
   if (typeof config.streamer_mode === 'undefined') {
     config.streamer_mode = 0;
@@ -671,8 +717,8 @@ window.addEventListener('DOMContentLoaded', () => {
   //set journal location property if first time
   if (typeof config.journal_path === 'undefined' || config.journal_path ===
       '') {
-    config.journal_path = os.homedir() +
-        '\\Saved Games\\Frontier Developments\\Elite Dangerous';
+    config.journal_path = path.join(os.homedir(),
+        '/Saved Games/Frontier Developments/Elite Dangerous');
     writeDB(config_db, config);
   }
   //Set the directory path preview input to journal path
@@ -681,7 +727,7 @@ window.addEventListener('DOMContentLoaded', () => {
   //read in stars and bodies data storage
   star_types = readDB(stars_db);
   stars_by_systems = readDB(stars_by_systems_db);
-  processed_journals = readDB(journals_db);
+  processed_journals = readDB(journals_db,[]);
   bodies_processed = readDB(bodies_db);
 
   //start the process to loop through all journals
@@ -689,5 +735,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
   /*UI events*/
   $('#EnableStreamerMode').on('click', toggleStreamerMode);
+  if (config.streamer_mode) {
+    $('body').addClass('streamer-mode');
+  }
+  console.log(config);
+  $('#TriggerClearCache').on('click', clearCacheThenIndex);
 
 });
