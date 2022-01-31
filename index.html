@@ -2,71 +2,93 @@
 <html lang="en" class="h-100">
 <head>
     <meta charset="UTF-8">
-    <title>Loopy Science ED Tools</title>
+    <title>Loopy Science v1.1.0</title>
     <link rel="stylesheet" href="./node_modules/bootstrap/dist/css/bootstrap.css"/>
     <link rel="stylesheet" href="./styles/styles.css"/>
-    <script defer src="./node_modules/@fortawesome/fontawesome-pro/js/all.min.js"></script>
+    <script defer src="./node_modules/@fortawesome/fontawesome-free/js/all.min.js"></script>
+    <script defer src="./node_modules/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="h-100">
-<header class="pt-3 text-center">
-    <img style="max-width: 125px" src="assets/Loopy_Science_300_x_300.png" alt="Loopy Science">
-</header>
-<main class="container-fluid h-100">
+<nav class="navbar navbar-dark bg-dark" aria-label="navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand text-light" href="#">Loopy Science v1.1.0</a>
+        <button class="navbar-toggler bg-dark text-light collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#optionsMenu" aria-controls="optionsMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <i class="fas fa-cog"></i>
+        </button>
 
-    <section id="ChooseDirectoryState" class="mt-3 d-flex align-items-center" data-step="1">
-        <div class="card shadow w-75 m-auto bg-dark text-light">
-            <h5 class="card-header">Scan Journal Logs</h5>
+        <div class="navbar-collapse collapse" id="optionsMenu" style="">
+            <ul class="nav me-auto mb-2 nav justify-content-center">
+                <li class="nav-item mx-2">
+                    <button id="EnableWatch" class="btn btn-sm btn-outline-danger" style="display: none"><i class="fas fa-book-reader me-2"></i> Start Auto Watch</button>
+                </li>
+                <li class="nav-item mx-2">
+                    <button id="EnableStreamerMode" class="btn btn-sm btn-outline-light"><i class="fas fa-video me-2"></i> Enable Streamer Mode</button>
+                </li>
+                <li class="nav-item mx-2">
+                    <button id="TriggerClearCache" class="btn btn-sm btn-outline-warning"><i class="fas fa-eraser"></i> Clear Cache</button>
+                </li>
+            </ul>
+
+        </div>
+    </div>
+</nav>
+<main class="container-fluid h-100">
+    <section id="ChooseDirectoryState" class="mt-1 d-flex align-items-center" data-step="1">
+        <div class="card w-75 m-auto bg-dark text-light">
+            <h5 class="card-header">Processing Journals...</h5>
             <div class="card-body">
-                <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files SHOULD be in.</h6>
+                <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files
+                    SHOULD be in.</h6>
             </div>
             <div class="card-body">
-                <!--<button id="ChooseDirectoryButton" class="btn btn-primary">
-                    <i class="fad fa-folder-open"></i> Choose Directory
-                </button>
-                <button id="RunButton" class="btn btn-sucess">
-                    <i class="fad fa-folder-open"></i> Start Processing
-                </button>-->
-                <input type="text" id="DirectoryPathPreview" class="form-control form-control-sm" disabled
+                <input type="text" id="DirectoryPathPreview" class="form-control form-control-sm bg-dark text-light" disabled
                        value="No journals loaded.">
             </div>
 
-                <ul id="JournalList" class="card-body list-group list-group-flush bg-transparent text-light" style="max-height: 200px; overflow-y: auto">
-
-                </ul>
-
+            <ul id="JournalList" class="card-body list-group list-group-flush bg-transparent text-light"
+                style="max-height: 200px; overflow-y: auto">
+            </ul>
+            <div class="card-body">
+                <span id="ScanProgress" class="text-light bg-dark"></span>
+            </div>
         </div>
     </section>
-    <section id="ResultsState" class="mt-3" data-step="2" style="display: none">
-        <div class="card shadow w-100 mx-auto mt-5 bg-dark text-light">
-            <h5 class="card-header">Here are your Loopy Science results!</h5>
+    <section id="ResultsState" class="mt-2" data-step="2" style="display: none">
+        <div class="card w-100 mx-auto mt-2 bg-dark text-light">
+            <h5 class="card-header">Totals</h5>
             <div class="card-body">
                 <div class="row">
-                    <div class="col planet-total earth text-center" data-type="Earthlike body">
-                        <h3>ELW</h3>
-                        <span class="total display-2">0</span>
-                        <h6>Top Star Type</h6>
-                        <h4></h4>
+                    <div class="col d-flex justify-content-center align-items-center text-center planet-total earth"
+                         data-type="Earthlike body">
+                        <div class=""><small class="d-block text-uppercase">total</small> <h6>Earthlike worlds</h6>
+                            <span class="total h1">0</span></div>
+
                     </div>
-                    <div class="col planet-total ammonia text-center" data-type="Ammonia world">
-                        <h3>AW</h3>
-                        <span class="total display-2">0</span>
-                        <h6>Top Star Type</h6>
-                        <h4></h4>
+                    <div class="col d-flex justify-content-center align-items-center text-center planet-total ammonia"
+                         data-type="Ammonia world">
+                        <div class=""><small class="d-block text-uppercase">total</small><h6> Ammonia worlds</h6>
+                            <span class="total h1">0</span></div>
+
                     </div>
-                    <div class="col planet-total water text-center" data-type="Water world">
-                        <h3>WW</h3>
-                        <span class="total display-2">0</span>
-                        <h6>Top Star Type</h6>
-                        <h4></h4>
+                    <div class="col d-flex justify-content-center align-items-center text-center planet-total water"
+                         data-type="Water world">
+                        <div class=""><small class="d-block text-uppercase">total</small><h6> Water worlds</h6>
+                            <span class="total h1">0</span></div>
+
                     </div>
                 </div>
+            </div>
+            <div class="card-body">
+                <form>
+                    <input id="StarSearch" class="form-control bg-dark text-light" type="text" placeholder="Star Filter Search" aria-label="Search">
+                </form>
                 <table class="table bg-dark text-light">
                     <thead>
                     <tr>
-                        <th class="sortable" scope="col">Star Type <i class="fad fa-sort"></i></th>
-                        <th class="sortable" scope="col">Earthlike World <i class="fad fa-sort"></i></th>
-                        <th class="sortable" scope="col">Ammonia World <i class="fad fa-sort"></i></th>
-                        <th class="sortable" scope="col">Water World <i class="fad fa-sort"></i></th>
+                        <th class="sortable" scope="col">Star Type <i class="fas fa-sort"></i></th>
+                        <th class="sortable" scope="col">Earthlike World <i class="fas fa-sort"></i></th>
+                        <th class="sortable" scope="col">Ammonia World <i class="fas fa-sort"></i></th>
+                        <th class="sortable" scope="col">Water World <i class="fas fa-sort"></i></th>
                     </tr>
                     </thead>
                     <tbody id="ResultsContainer">
