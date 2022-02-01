@@ -38,8 +38,8 @@ let bodies_processed = {};
 function readDB(db, expects) {
   // read & parse JSON object from file
   //return db
-  if(expects === undefined){
-    expects = {}
+  if (expects === undefined) {
+    expects = {};
   }
   try {
     const file_contents = fs.readFileSync(db, {encoding: 'utf-8', flag: 'r'});
@@ -235,7 +235,7 @@ function catalogBody(elite_event) {
     }
   }
   bodies_processed[elite_event['BodyName']] = elite_event['BodyName'];
-  updateScanStatusDisplay('Processed: ' + body_type + ' / ' + bodies_processed[elite_event['BodyName']])
+  updateScanStatusDisplay('Processed: ' + body_type + ' / ' + bodies_processed[elite_event['BodyName']]);
 
 }
 
@@ -293,13 +293,15 @@ function processJournalEvent(elite_event) {
   let star_type;
   let star_system;
 
-  if (elite_event && elite_event['event'] === 'Shutdown') {
+  if (elite_event &&
+      elite_event['event'] === 'Shutdown') {
     return true;
   }
   //check for the type of scan we need
-  if (elite_event && ((elite_event['event'] !== 'Scan') ||
-      (typeof elite_event['ScanType'] !== 'undefined' &&
-          elite_event['ScanType'] === 'NavBeaconDetail'))) {
+  if (elite_event &&
+      ((elite_event['event'] !== 'Scan') ||
+          (typeof elite_event['ScanType'] !== 'undefined' &&
+              elite_event['ScanType'] === 'NavBeaconDetail'))) {
     return false;
   }
 
@@ -308,35 +310,32 @@ function processJournalEvent(elite_event) {
   /*Star Entries*/
   //checks to make sure scan is a star
   if (elite_event.hasOwnProperty('StarType') &&
-      elite_event.hasOwnProperty('Luminosity') &&
-      elite_event.hasOwnProperty('Subclass')) {
-    let body_id = Number(elite_event['BodyID']);
+      elite_event.hasOwnProperty('Luminosity')) {
+    let body_id = parseInt(elite_event['BodyID']);
 
-    if (typeof star_system === 'undefined' ||
-        typeof elite_event['StarSystem'] === 'undefined') {
-      return false;
-
+    let subclass = elite_event.hasOwnProperty('Subclass') ? elite_event['Subclass'] : '';
+    star_type = elite_event['StarType'] + subclass + ' ' + elite_event['Luminosity'];
+    if (typeof star_system === 'undefined') {
+      console.log('Older Log?', elite_event);
+      star_system = elite_event['BodyName']
+      if(body_id){
+        star_system = elite_event['BodyName'].split(' ')
+        star_system.pop()
+      }
     }
-
-    let subclass = elite_event['Subclass'];
     star_cache.push(star_system + body_id);
-    star_type = elite_event['StarType'] + subclass + ' ' +
-        elite_event['Luminosity'];
+
     catalogStarType(body_id, star_system, star_type);
     return false;
   }
   /*Bodies*/
   else {
     if (elite_event.hasOwnProperty('PlanetClass') &&
-        typeof elite_event['ScanType'] !== 'undefined') {
-      if (elite_event['PlanetClass'] === 'Earthlike body' ||
-          elite_event['PlanetClass'] === 'Ammonia world' ||
-          elite_event['PlanetClass'] === 'Water world') {
-
-        cacheBody(elite_event);
-
-        return false;
-      }
+        (elite_event['PlanetClass'] === 'Earthlike body' ||
+            elite_event['PlanetClass'] === 'Ammonia world' ||
+            elite_event['PlanetClass'] === 'Water world')) {
+      cacheBody(elite_event);
+      return false;
     }
   }
   return false;
@@ -707,7 +706,7 @@ window.addEventListener('DOMContentLoaded', () => {
   //read in stars and bodies data storage
   star_types = readDB(stars_db);
   stars_by_systems = readDB(stars_by_systems_db);
-  processed_journals = readDB(journals_db,[]);
+  processed_journals = readDB(journals_db, []);
   bodies_processed = readDB(bodies_db);
 
   //start the process to loop through all journals
