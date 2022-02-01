@@ -182,8 +182,6 @@ function catalogBody(elite_event) {
                 0,
           };
         }
-
-        console.log(star_types['Unknown'], body_type)
         star_types['Unknown'][body_type]++;
         return null;
       }
@@ -344,7 +342,6 @@ function processJournalEvent(elite_event) {
     let subclass = elite_event.hasOwnProperty('Subclass') ? elite_event['Subclass'] : '';
     star_type = elite_event['StarType'] + subclass + ' ' + elite_event['Luminosity'];
     if (typeof star_system === 'undefined') {
-      console.log('Older Log?', elite_event);
       star_system = elite_event['BodyName'];
       if (body_id) {
         star_system = elite_event['BodyName'].split(' ');
