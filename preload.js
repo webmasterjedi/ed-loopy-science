@@ -80,17 +80,29 @@ function chooseDirectory() {
 }
 
 function clearCacheThenIndex() {
+  file_count = 0;
+  files_total = 0;
+  processing_bodies = 0;
+  processed_journals = [];
+  detected_active_journal = false;
+  auto_process = false;
+  star_types = {};
+  star_cache = [];
+  body_cache = [];
+  stars_by_systems = {};
+  bodies_processed = {};
   //clear local storages (json files)
-  star_types = writeDB(stars_db, []);
-  stars_by_systems = writeDB(stars_by_systems_db, []);
+  config = writeDB(config_db, {});
+  star_types = writeDB(stars_db, {});
+  stars_by_systems = writeDB(stars_by_systems_db, {});
   processed_journals = writeDB(journals_db, []);
-  bodies_processed = writeDB(bodies_db, []);
+  bodies_processed = writeDB(bodies_db, {});
   $('#JournalList').html('');
   //switch steps
   $('[data-step="2"]').removeClass('d-flex').slideUp();
   $('[data-step="1"]').slideUp().slideDown();
 
-  setTimeout(processJournals, 666);
+  setTimeout(init, 666);
 }
 
 function getStarIdFromPlanetsParents(parents) {
@@ -148,9 +160,6 @@ function catalogBody(elite_event) {
         typeof elite_event['StarSystem'] === 'undefined') {
       //convert body name to array
       star_system = detectStarSystemByBody(elite_event['BodyName']);
-      if (star_system === null) {
-        return null;
-      }
     }
     //set planet type only on the types we want
     switch (elite_event['PlanetClass']) {
@@ -162,6 +171,22 @@ function catalogBody(elite_event) {
     }
     //move forward if we have a planet type set
     if (body_type) {
+      if (star_system === null || !star_system.length) {
+        if (typeof star_types['Unknown'] === 'undefined') {
+          star_types['Unknown'] = {
+            'Earthlike body':
+                0,
+            'Ammonia world':
+                0,
+            'Water world':
+                0,
+          };
+        }
+
+        console.log(star_types['Unknown'], body_type)
+        star_types['Unknown'][body_type]++;
+        return null;
+      }
       //try to get a star id from the stars to systems references.
       let planets_star_id = getStarIdFromPlanetsParents(elite_event['Parents']);
       //If not null we found a match
@@ -184,8 +209,7 @@ function catalogBody(elite_event) {
         if (star_type && star_types.hasOwnProperty(star_type)) {
           star_types[star_type][body_type]++;
         }
-      }
-      else {
+      } else {
         //barycenter
         //if no system name in codex
         //Setup new Barycenter system
@@ -207,8 +231,8 @@ function catalogBody(elite_event) {
             barycenter_stars.push(possible_star_types[num_from_letter]);
           }
           else {
-            console.log(value, barycenter_code);
-            console.log(elite_event['BodyName'], stars_by_systems[star_system]);
+            //console.log(star_system);
+            //console.log(elite_event['BodyName'], stars_by_systems[star_system]);
           }
 
         });
@@ -248,7 +272,11 @@ function detectStarSystemByBody(body_name) {
   Object.entries(stars_by_systems).forEach(system => {
     let [system_name] = system;
     if (body_name.match(system_name)) {
-      return detected_system_name = system_name;
+      if (system_name.length) {
+        detected_system_name = system_name;
+        return detected_system_name;
+      }
+
     }
   });
 
@@ -317,12 +345,14 @@ function processJournalEvent(elite_event) {
     star_type = elite_event['StarType'] + subclass + ' ' + elite_event['Luminosity'];
     if (typeof star_system === 'undefined') {
       console.log('Older Log?', elite_event);
-      star_system = elite_event['BodyName']
-      if(body_id){
-        star_system = elite_event['BodyName'].split(' ')
-        star_system.pop()
+      star_system = elite_event['BodyName'];
+      if (body_id) {
+        star_system = elite_event['BodyName'].split(' ');
+        star_system.pop();
+        star_system = star_system.join(' ');
       }
     }
+
     star_cache.push(star_system + body_id);
 
     catalogStarType(body_id, star_system, star_type);
@@ -678,10 +708,7 @@ function toggleStreamerMode(e) {
   writeDB(config_db, config);
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-  //omg jQuery! how old are you?
-  window.$ = window.jQuery = require('jquery');
-
+function init() {
   //read config from local db
   config = readDB(config_db);
   console.log(config);
@@ -716,5 +743,12 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#EnableStreamerMode').on('click', toggleStreamerMode);
 
   $('#TriggerClearCache').on('click', clearCacheThenIndex);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  //omg jQuery! how old are you?
+  window.$ = window.jQuery = require('jquery');
+
+  init();
 
 });
