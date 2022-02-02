@@ -34,7 +34,7 @@
 </nav>
 <main class="container-fluid h-100">
     <section id="ChooseDirectoryState" class="mt-1 d-flex align-items-center" data-step="1">
-        <div class="card w-75 m-auto bg-dark text-light">
+        <div class="card m-2 m-auto bg-dark text-light">
             <h5 class="card-header">Processing Journals...</h5>
             <div class="card-body">
                 <h6 class="card-subtitle mb-2">Using the default directory that your Elite Dangerous Journal files
@@ -54,23 +54,23 @@
         </div>
     </section>
     <section id="ResultsState" class="mt-2" data-step="2" style="display: none">
-        <div class="card w-100 mx-auto mt-2 bg-dark text-light">
+        <div class="card m-2 bg-dark text-light">
             <h5 class="card-header">Totals</h5>
             <div class="card-body">
-                <div class="row">
-                    <div class="col d-flex justify-content-center align-items-center text-center planet-total earth"
+                <div class="row d-flex justify-content-center align-items-center">
+                    <div class="col-4 my-2 d-flex justify-content-center align-items-center text-center planet-total earth"
                          data-type="Earthlike body">
                         <div class=""><small class="d-block text-uppercase">total</small> <h6>Earthlike worlds</h6>
                             <span class="total h1">0</span></div>
 
                     </div>
-                    <div class="col d-flex justify-content-center align-items-center text-center planet-total ammonia"
+                    <div class="col-4 my-2 d-flex justify-content-center align-items-center text-center planet-total ammonia"
                          data-type="Ammonia world">
                         <div class=""><small class="d-block text-uppercase">total</small><h6> Ammonia worlds</h6>
                             <span class="total h1">0</span></div>
 
                     </div>
-                    <div class="col d-flex justify-content-center align-items-center text-center planet-total water"
+                    <div class="col-4 my-2 d-flex justify-content-center align-items-center text-center planet-total water"
                          data-type="Water world">
                         <div class=""><small class="d-block text-uppercase">total</small><h6> Water worlds</h6>
                             <span class="total h1">0</span></div>
@@ -78,7 +78,7 @@
                     </div>
                 </div>
             </div>
-            <div class="card-body">
+            <div class="card-body streamer-mode-hide">
                 <form>
                     <input id="StarSearch" class="form-control bg-dark text-light" type="text" placeholder="Star Filter Search" aria-label="Search">
                 </form>

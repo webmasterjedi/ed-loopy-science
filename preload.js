@@ -19,8 +19,9 @@ const local_moment = moment();
 
 let config = {
   journal_path: '',
-  streamer_mode: 0,
-
+  streamer_mode: false,
+  auto_scan: false,
+  window_size: {},
 };
 
 let file_count = 0;
@@ -207,7 +208,8 @@ function catalogBody(elite_event) {
         if (star_type && star_types.hasOwnProperty(star_type)) {
           star_types[star_type][body_type]++;
         }
-      } else {
+      }
+      else {
         //barycenter
         //if no system name in codex
         //Setup new Barycenter system
@@ -492,19 +494,31 @@ function outputResults() {
     //Show enable watch button and setup click event
     $('#EnableWatch').show().on('click', (e) => {
       //set auto_process flag
-      auto_process = true;
+      config = readDB(config_db)
+      auto_process = config.auto_scan = !config.auto_scan;
+      writeDB(config_db, config);
       //update button styles
+      if (config.auto_scan) {
+        $('#EnableWatch').
+            removeClass('btn-outline-success').
+            addClass('btn-outline-danger').
+            html(
+                '<i class="fas fa-book-reader me-2"></i>Disable Auto Watch <i class="fas fa-check"></i>');
+        //kick off watch process
+        watchAndProcess(detected_active_journal);
+        return config.auto_scan;
+      }
       $('#EnableWatch').
-          removeClass('text-light').
-          removeClass('btn-outline-success').
-          addClass('btn-outline-danger').
-          addClass('text-danger').
+          removeClass('btn-outline-danger').
+          addClass('btn-outline-success').
           html(
-              '<i class="fas fa-book-reader me-2"></i> Auto Watch is on <i class="fas fa-check"></i>').
-          off('click');
+              '<i class="fas fa-book-reader me-2"></i>Enable Auto Watch');
       //kick off watch process
-      watchAndProcess(detected_active_journal);
+      stopWatchAndProcess(detected_active_journal);
     });
+    if (config.auto_scan) {
+      $('#EnableWatch').trigger('click');
+    }
   }
 }
 
@@ -699,10 +713,26 @@ function parseBuffer(buffer) {
 
 /*Event listener for button that toggles streamer mode*/
 function toggleStreamerMode(e) {
-  e.preventDefault();
+  if (typeof e !== 'undefined' && typeof e.preventDefault === 'function') {
+    e.preventDefault();
+    config = readDB(config_db)
+    config.streamer_mode = !config.streamer_mode;
+    writeDB(config_db, config);
+  }
   $('body').toggleClass('streamer-mode');
-  config.streamer_mode = !config.streamer_mode;
-  writeDB(config_db, config);
+  //update button styles
+  if (config.streamer_mode) {
+
+    $('#EnableStreamerMode').
+        removeClass('btn-outline-light').
+        addClass('btn-outline-warning').
+        html('<i class="fas fa-video me-2"></i> Disable Streamer Mode <i class="fas fa-check"></i>');
+    return config.streamer_mode;
+  }
+  $('#EnableStreamerMode').
+      removeClass('btn-outline-warning').
+      addClass('btn-outline-light').
+      html('<i class="fas fa-video me-2"></i> Enable Streamer Mode');
 }
 
 function init() {
@@ -715,7 +745,7 @@ function init() {
     writeDB(config_db, config);
   }
   if (config.streamer_mode) {
-    $('body').addClass('streamer-mode');
+    toggleStreamerMode();
   }
   //set journal location property if first time
   if (typeof config.journal_path === 'undefined' || config.journal_path ===
@@ -737,7 +767,7 @@ function init() {
   setTimeout(processJournals, 100);
 
   /*UI events*/
-  $('#EnableStreamerMode').on('click', toggleStreamerMode);
+  $('#EnableStreamerMode').on('click', (e) => {toggleStreamerMode(e);});
 
   $('#TriggerClearCache').on('click', clearCacheThenIndex);
 }

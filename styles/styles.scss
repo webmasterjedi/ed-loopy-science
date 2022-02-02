@@ -66,6 +66,12 @@ body {
   &.streamer-mode{
     background-color: #00ff00;
     background-image: none;
+    .card.bg-dark {
+      background-color: #00ff00 !important;
+    }
+    .streamer-mode-hide {
+      display: none;
+    }
   }
 }
 .bg-dark {

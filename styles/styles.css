@@ -70,6 +70,14 @@ body.streamer-mode {
   background-color: #00ff00;
   background-image: none;
 }
+html.streamer-mode .card.bg-dark,
+body.streamer-mode .card.bg-dark {
+  background-color: #00ff00 !important;
+}
+html.streamer-mode .streamer-mode-hide,
+body.streamer-mode .streamer-mode-hide {
+  display: none;
+}
 
 .bg-dark {
   --bs-bg-opacity: 0.666;
