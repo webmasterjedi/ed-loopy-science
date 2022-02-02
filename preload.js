@@ -493,31 +493,11 @@ function outputResults() {
   if (detected_active_journal) {
     //Show enable watch button and setup click event
     $('#EnableWatch').show().on('click', (e) => {
-      //set auto_process flag
-      config = readDB(config_db)
-      auto_process = config.auto_scan = !config.auto_scan;
-      writeDB(config_db, config);
-      //update button styles
-      if (config.auto_scan) {
-        $('#EnableWatch').
-            removeClass('btn-outline-success').
-            addClass('btn-outline-danger').
-            html(
-                '<i class="fas fa-book-reader me-2"></i>Disable Auto Watch <i class="fas fa-check"></i>');
-        //kick off watch process
-        watchAndProcess(detected_active_journal);
-        return config.auto_scan;
-      }
-      $('#EnableWatch').
-          removeClass('btn-outline-danger').
-          addClass('btn-outline-success').
-          html(
-              '<i class="fas fa-book-reader me-2"></i>Enable Auto Watch');
-      //kick off watch process
-      stopWatchAndProcess(detected_active_journal);
+      toggleAutoScan(e);
     });
     if (config.auto_scan) {
-      $('#EnableWatch').trigger('click');
+      auto_process = true;
+      toggleAutoScan();
     }
   }
 }
@@ -705,17 +685,45 @@ function parseBuffer(buffer) {
       }
       else {
         //Still watching, mainly outputting to console for debugging here
-        console.log('Processing Event', lineJSON, stars_by_systems, body_cache);
+        console.log('Processing Event', lineJSON);
       }
     }
   });
+}
+
+function toggleAutoScan(e) {
+  if (typeof e !== 'undefined' && typeof e.preventDefault === 'function') {
+    //set auto_process flag
+    config = readDB(config_db);
+    auto_process = config.auto_scan = !config.auto_scan;
+    writeDB(config_db, config);
+    e.preventDefault();
+  }
+  //update button styles
+  if (config.auto_scan) {
+    $('#EnableWatch').
+        removeClass('btn-outline-danger').
+        addClass('btn-danger').
+        html(
+            '<i class="fas fa-book-reader me-2"></i>Disable Auto Watch <i class="fas fa-check"></i>');
+    //kick off watch process
+    watchAndProcess(detected_active_journal);
+    return config.auto_scan;
+  }
+  $('#EnableWatch').
+      removeClass('btn-danger').
+      addClass('btn-outline-danger').
+      html(
+          '<i class="fas fa-book-reader me-2"></i>Enable Auto Watch');
+  //kick off watch process
+  stopWatchAndProcess(detected_active_journal);
 }
 
 /*Event listener for button that toggles streamer mode*/
 function toggleStreamerMode(e) {
   if (typeof e !== 'undefined' && typeof e.preventDefault === 'function') {
     e.preventDefault();
-    config = readDB(config_db)
+    config = readDB(config_db);
     config.streamer_mode = !config.streamer_mode;
     writeDB(config_db, config);
   }
