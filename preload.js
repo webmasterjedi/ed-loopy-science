@@ -14,7 +14,6 @@ const stars_by_systems_db = path.join(__dirname, db_dir,
     'stars_by_systems_db.json');
 const bodies_db = path.join(__dirname, db_dir, 'bodies_db.json');
 const journals_db = path.join(__dirname, db_dir, 'journals_db.json');
-
 const local_moment = moment();
 
 let config = {
@@ -35,7 +34,7 @@ let star_cache = [];
 let body_cache = [];
 let stars_by_systems = {};
 let bodies_processed = {};
-
+let is_watching = false;
 function readDB(db, expects) {
   // read & parse JSON object from file
   //return db
@@ -259,7 +258,7 @@ function catalogBody(elite_event) {
     }
   }
   bodies_processed[elite_event['BodyName']] = elite_event['BodyName'];
-  updateScanStatusDisplay('Processed: ' + body_type + ' / ' + bodies_processed[elite_event['BodyName']]);
+  updateBodyCountDisplay()
 
 }
 
@@ -307,13 +306,13 @@ function processBodyCache() {
     catalogBody(current_body);
   }
 
-  if (!body_cache.length) {
+  if (!body_cache.length && !is_watching) {
     console.log('done');
     setTimeout(outputResults, 150);
     processing_bodies = 0;
     return true;
   }
-
+  updateBodyCountDisplay()
   return true;
 }
 
@@ -356,9 +355,9 @@ function processJournalEvent(elite_event) {
 
     catalogStarType(body_id, star_system, star_type);
     return false;
-  }
-  /*Bodies*/
-  else {
+
+  } else {
+    /*Bodies*/
     if (elite_event.hasOwnProperty('PlanetClass') &&
         (elite_event['PlanetClass'] === 'Earthlike body' ||
             elite_event['PlanetClass'] === 'Ammonia world' ||
@@ -495,7 +494,7 @@ function outputResults() {
     $('#EnableWatch').show().on('click', (e) => {
       toggleAutoScan(e);
     });
-    if (config.auto_scan) {
+    if (config.auto_scan && !is_watching) {
       auto_process = true;
       toggleAutoScan();
     }
@@ -618,7 +617,7 @@ function processJournals() {
 }
 
 function watchAndProcess(journal_file) {
-
+  is_watching = true;
   detected_active_journal = journal_file;
 // Obtain the initial size of the log file before we begin watching it.
   let fileSize = fs.statSync(journal_file).size;
@@ -659,6 +658,7 @@ function watchAndProcess(journal_file) {
 }
 
 function stopWatchAndProcess() {
+  is_watching = false
   fs.unwatchFile(detected_active_journal);
 }
 
